@@ -1,0 +1,13 @@
+{
+  "color": [
+    { "name": "start_window_background", "value": "#F5F7F6" },
+    { "name": "quota_background", "value": "#F5F7F6" },
+    { "name": "quota_surface", "value": "#FFFFFF" },
+    { "name": "quota_ink", "value": "#1C2924" },
+    { "name": "quota_muted", "value": "#65736D" },
+    { "name": "quota_line", "value": "#E1E7E3" },
+    { "name": "quota_healthy", "value": "#167D56" },
+    { "name": "quota_warning", "value": "#A86A19" },
+    { "name": "quota_error", "value": "#B44842" }
+  ]
+}

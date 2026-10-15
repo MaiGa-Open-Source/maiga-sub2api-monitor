@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sub2API · 账号用量趋势卡交互稿</title>
+  <style>
+    :root { font-family: "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif; color: #20312f; background: #f3f5f4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible, .chart-point:focus-visible { outline: 2px solid #138777; outline-offset: 2px; }
+    [hidden] { display: none !important; }
+    .app { max-width: 1250px; margin: auto; padding: 28px 30px 36px; }
+    .app-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid #dce4e0; }
+    .app-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .app-logo { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 7px; background: #263e3b; color: #fff; font-size: 13px; font-weight: 800; }
+    .app-title strong { display: block; font-size: 16px; line-height: 1.25; }
+    .app-title small { display: block; margin-top: 3px; color: #6c7b78; font-size: 11px; }
+    .app-header a { color: #286e66; font-size: 12px; white-space: nowrap; text-decoration: none; }
+    .app-header a:hover { text-decoration: underline; }
+    .workspace { display: grid; grid-template-columns: minmax(255px, 305px) minmax(0, 1fr); gap: 35px; padding-top: 26px; }
+    .controls h1 { margin: 0; font-size: 24px; line-height: 1.35; }
+    .controls .intro { margin: 8px 0 23px; color: #697a76; font-size: 13px; line-height: 1.55; }
+    .control-group { padding: 17px 0; border-top: 1px solid #dfe6e3; }
+    .control-group:first-of-type { border-top: 0; padding-top: 0; }
+    .control-group > label, .control-group > .group-label { display: block; margin-bottom: 10px; font-size: 12px; font-weight: 700; }
+    .control-group select { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cad8d3; border-radius: 6px; background: #fff; color: #233632; font-size: 13px; }
+    .control-group p { margin: 9px 0 0; color: #70817b; font-size: 11px; line-height: 1.55; }
+    .control-segment { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 4px; border: 1px solid #d4dfda; border-radius: 7px; background: #e9efec; }
+    .control-segment button { min-height: 36px; border: 0; border-radius: 5px; background: transparent; color: #586b65; font-size: 12px; font-weight: 700; }
+    .control-segment button[aria-pressed="true"] { background: #fff; color: #1d6459; box-shadow: 0 1px 4px #233c3222; }
+    .swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .swatch { min-height: 65px; border: 1px solid #d4dfda; border-radius: 6px; padding: 7px; background: #fff; color: #344642; font-size: 11px; font-weight: 700; }
+    .swatch[aria-pressed="true"] { border-color: #16826f; box-shadow: inset 0 0 0 1px #16826f; }
+    .swatch i { display: block; height: 19px; margin-bottom: 7px; border-radius: 3px; background: var(--swatch-bg); border: 1px solid #ffffff77; }
+    .swatch i::after { content: ""; display: block; width: 45%; height: 6px; margin: 6px; border-radius: 3px; background: var(--swatch-accent); }
+    .detail { padding: 13px 0; border-top: 1px solid #dfe6e3; font-size: 12px; }
+    .detail span { color: #6d7d77; }
+    .detail strong { display: block; margin-top: 5px; font-size: 13px; }
+    .detail small { display: block; margin-top: 4px; color: #73827d; font-size: 11px; }
+    .preview-head { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .preview-head h2 { margin: 0; font-size: 17px; }
+    .preview-head span { color: #71817b; font-size: 11px; text-align: right; }
+    .desktop { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; min-height: 520px; overflow: hidden; padding: 46px 22px; border: 1px solid #bccfca; border-radius: 8px; background: #c9d9d4; isolation: isolate; }
+    .desktop::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, transparent 0 76px, #ffffff3b 76px 77px, transparent 77px 135px), linear-gradient(160deg, #c9d9d4 0 54%, #9fbebf 54% 72%, #d9c2b9 72%); z-index: -1; }
+    .desktop[data-wallpaper="dark"] { border-color: #576b6b; background: #354e50; }
+    .desktop[data-wallpaper="dark"]::before { background: repeating-linear-gradient(135deg, transparent 0 76px, #ffffff16 76px 77px, transparent 77px 135px), linear-gradient(160deg, #263d42 0 54%, #456468 54% 72%, #685d61 72%); }
+    .trend-card { --card-bg: #fcfdfb; --ink: #243531; --muted: #657771; --line: #dce6e0; --req: #138a73; --cost: #c3654f; --chip: #eaf2ee; position: relative; display: flex; flex-direction: column; justify-self: center; min-width: 0; width: min(100%, 430px); height: 430px; overflow: hidden; border: 1px solid #ffffffaa; border-radius: 8px; padding: 17px 18px 14px; background: var(--card-bg); color: var(--ink); box-shadow: 0 14px 30px #29484130; }
+    .trend-card[data-size="medium"] { width: min(100%, 480px); height: 244px; padding: 10px 13px 9px; }
+    .trend-card[data-theme="graphite"] { --card-bg: #273439; --ink: #f7faf7; --muted: #c0d0ca; --line: #516763; --req: #76d5b7; --cost: #ffc18b; --chip: #354a4c; border-color: #71837e; }
+    .trend-card[data-theme="glass"] { --card-bg: #f6fffaac; --ink: #15352f; --muted: #365950; --line: #87a69d; --req: #096f62; --cost: #a74838; --chip: #ffffff78; -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); box-shadow: 0 14px 30px #29484138, inset 0 1px #ffffffee; }
+    .desktop[data-wallpaper="dark"] .trend-card[data-theme="glass"] { --card-bg: #2c4b50a8; --ink: #f7fffa; --muted: #d4e9e1; --line: #87aaa8; --req: #9eeacf; --cost: #ffc1a8; --chip: #35585ac0; border-color: #ffffff77; }
+    .card-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .card-logo { display: grid; place-items: center; width: 29px; height: 29px; flex: none; border-radius: 5px; background: var(--req); color: var(--card-bg); font-size: 11px; font-weight: 800; }
+    .card-identity { min-width: 0; }
+    .card-identity strong, .card-identity small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-identity strong { font-size: 14px; line-height: 1.15; }
+    .card-identity small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .refresh { display: grid; place-items: center; width: 29px; height: 29px; flex: none; margin-left: auto; border: 0; border-radius: 5px; background: transparent; color: var(--ink); font-size: 21px; line-height: 1; }
+    .refresh:hover { background: var(--chip); }
+    .refresh:disabled { opacity: .5; cursor: wait; }
+    .periods { display: flex; align-items: center; gap: 3px; margin-top: 15px; }
+    .periods button { min-width: 51px; height: 29px; border: 0; border-radius: 4px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .periods button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
+    .periods span { margin-left: auto; color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 16px; }
+    .metric { min-width: 0; border: 0; border-bottom: 2px solid transparent; padding: 0 8px 10px 0; background: transparent; color: var(--muted); text-align: left; }
+    .metric + .metric { border-left: 1px solid var(--line); padding-left: 16px; }
+    .metric[aria-pressed="true"] { border-bottom-color: var(--metric-color); color: var(--ink); }
+    .metric span, .metric strong { display: block; }
+    .metric span { font-size: 10px; }
+    .metric strong { margin-top: 3px; font-size: 24px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .metric[data-metric="requests"] { --metric-color: var(--req); }
+    .metric[data-metric="cost"] { --metric-color: var(--cost); }
+    .chart-wrap { position: relative; flex: 1; min-height: 0; margin-top: 12px; }
+    .chart-wrap svg { display: block; width: 100%; height: 100%; min-height: 130px; overflow: visible; }
+    .chart-grid { stroke: var(--line); stroke-width: 1; }
+    .chart-label { fill: var(--muted); font-family: inherit; font-size: 10px; }
+    .chart-bar { fill: var(--chart-color); opacity: .75; }
+    .chart-bar.selected { opacity: 1; }
+    .chart-area { fill: var(--chart-color); opacity: .12; }
+    .chart-line { fill: none; stroke: var(--chart-color); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .chart-dot { fill: var(--card-bg); stroke: var(--chart-color); stroke-width: 2.5; }
+    .chart-hit { fill: transparent; cursor: pointer; }
+    .chart-point { cursor: pointer; }
+    .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 25px; margin-top: 7px; border-top: 1px solid var(--line); padding-top: 7px; color: var(--muted); font-size: 10px; }
+    .card-foot strong { overflow: hidden; color: var(--ink); font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .card-foot span { flex: none; }
+    .card-message { position: absolute; inset: 58px 12px 32px; display: grid; place-items: center; color: var(--muted); text-align: center; font-size: 12px; line-height: 1.5; }
+    .trend-card[data-size="medium"] .periods { margin-top: 5px; }
+    .trend-card[data-size="medium"] .periods button { height: 24px; }
+    .trend-card[data-size="medium"] .metrics { margin-top: 6px; }
+    .trend-card[data-size="medium"] .metric { padding-bottom: 5px; }
+    .trend-card[data-size="medium"] .metric strong { margin-top: 1px; font-size: 17px; }
+    .trend-card[data-size="medium"] .chart-wrap { margin-top: 4px; }
+    .trend-card[data-size="medium"] .chart-wrap svg { min-height: 74px; }
+    .trend-card[data-size="medium"] .card-foot { min-height: 19px; margin-top: 1px; padding-top: 3px; }
+    .trend-card[data-size="medium"] .card-message { inset: 45px 12px 22px; }
+    .preview-note { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 15px; margin-top: 11px; color: #667772; font-size: 11px; line-height: 1.5; }
+    .state-control { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 19px; }
+    .state-control button { height: 30px; border: 1px solid #cfdbd6; border-radius: 4px; padding: 0 10px; background: #fff; color: #526660; font-size: 11px; }
+    .state-control button[aria-pressed="true"] { border-color: #18816e; color: #126553; }
+    .method { max-width: 920px; margin: 27px 0 0; border-top: 1px solid #dce4e0; padding-top: 15px; color: #63736e; font-size: 11px; line-height: 1.6; }
+    .method code { color: #2c5e53; }
+    @media (max-width: 850px) { .workspace { grid-template-columns: minmax(0, 1fr); gap: 23px; } .controls, .preview { min-width: 0; } .preview { order: -1; } .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; } .controls h1, .controls .intro { grid-column: 1 / -1; } .control-group:nth-of-type(1), .control-group:nth-of-type(2) { border-top: 1px solid #dfe6e3; padding-top: 17px; } .detail { grid-column: 1 / -1; } .desktop { min-width: 0; min-height: 470px; } }
+    @media (max-width: 540px) { .app { padding: 17px 12px 27px; } .app-header a { font-size: 11px; } .workspace { padding-top: 20px; } .controls { grid-template-columns: 1fr; } .controls h1 { font-size: 21px; } .control-group:nth-of-type(2) { border-top: 1px solid #dfe6e3; } .desktop { min-height: 440px; padding: 22px 9px; } .desktop:has(.trend-card[data-size="medium"]) { min-height: 330px; } .trend-card { height: 410px; padding: 15px 13px 12px; } .trend-card[data-size="medium"] { height: 232px; } .metric strong { font-size: 22px; } .trend-card[data-size="medium"] .metric strong { font-size: 16px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-title"><span class="app-logo">S2</span><div><strong>账号用量趋势</strong><small>D02 · 桌面卡片交互稿</small></div></div>
+      <a href="sub2api-monitor-interaction.html">查看现有额度卡</a>
+    </header>
+    <main class="workspace">
+      <section class="controls" aria-label="原型控制">
+        <h1>用量趋势卡</h1>
+        <p class="intro">同一账号的每日请求与费用。卡片内可切换时间范围及图表指标。</p>
+        <div class="control-group">
+          <label for="account-select">关注账号</label>
+          <select id="account-select"><option value="north">主账号 · 北区</option><option value="east">备用账号 · 东区</option><option value="south">团队账号 · 南区</option></select>
+          <p>只显示当前选中的一个上游账号。</p>
+        </div>
+        <div class="control-group">
+          <span class="group-label">卡片尺寸</span>
+          <div class="control-segment" role="group" aria-label="卡片尺寸"><button type="button" data-size="medium" aria-pressed="false">2×4 中卡</button><button type="button" data-size="large" aria-pressed="true">4×4 大卡</button></div>
+        </div>
+        <div class="control-group">
+          <span class="group-label">颜色风格</span>
+          <div class="swatches" role="group" aria-label="颜色风格">
+            <button class="swatch" type="button" data-theme="pine" aria-pressed="true" style="--swatch-bg:#fbfdfa;--swatch-accent:#138a73"><i></i>云松</button>
+            <button class="swatch" type="button" data-theme="graphite" aria-pressed="false" style="--swatch-bg:#273439;--swatch-accent:#76d5b7"><i></i>石墨</button>
+            <button class="swatch" type="button" data-theme="glass" aria-pressed="false" style="--swatch-bg:#a8c8bd;--swatch-accent:#e8fff2"><i></i>琉璃</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="group-label">桌面背景</span>
+          <div class="control-segment" role="group" aria-label="桌面背景"><button type="button" data-wallpaper="light" aria-pressed="true">浅色</button><button type="button" data-wallpaper="dark" aria-pressed="false">深色</button></div>
+        </div>
+        <div class="detail"><span>选中日期</span><strong id="day-detail">--</strong><small id="day-detail-sub">点击或触摸图表查看单日请求及费用</small></div>
+      </section>
+      <section class="preview" aria-label="桌面卡片预览">
+        <div class="preview-head"><h2>桌面预览</h2><span id="size-label">4×4 · 单账号趋势</span></div>
+        <div class="desktop" id="desktop" data-wallpaper="light">
+          <article class="trend-card" id="card" data-size="large" data-theme="pine" aria-label="账号用量趋势卡">
+            <div class="card-head"><span class="card-logo" aria-hidden="true">S2</span><div class="card-identity"><strong>用量趋势</strong><small id="card-account">主账号 · 北区</small></div><button class="refresh" id="refresh" type="button" title="模拟刷新" aria-label="模拟刷新">↻</button></div>
+            <div class="periods" role="group" aria-label="统计范围"><button type="button" data-days="7" aria-pressed="true">近 7 天</button><button type="button" data-days="30" aria-pressed="false">近 30 天</button><span id="card-status">刚刚更新</span></div>
+            <div class="metrics" role="group" aria-label="图表指标"><button class="metric" type="button" data-metric="requests" aria-pressed="true"><span>请求总数</span><strong id="total-requests">--</strong></button><button class="metric" type="button" data-metric="cost" aria-pressed="false"><span>账号费用</span><strong id="total-cost">--</strong></button></div>
+            <div class="chart-wrap" id="chart-wrap"><svg id="chart" viewBox="0 0 390 180" role="img" aria-label="每日请求数图表"></svg></div>
+            <div class="card-message" id="card-message" hidden></div>
+            <div class="card-foot"><strong id="day-caption">--</strong><span id="chart-caption">每日请求</span></div>
+          </article>
+        </div>
+        <div class="preview-note"><span>7 天：逐日柱状图 · 30 天：趋势面积图</span><span>图表按当前账号和指标重绘</span></div>
+        <div class="state-control" role="group" aria-label="数据状态预览"><button type="button" data-state="normal" aria-pressed="true">正常</button><button type="button" data-state="empty" aria-pressed="false">无记录</button><button type="button" data-state="offline" aria-pressed="false">连接失败</button></div>
+      </section>
+    </main>
+    <p class="method">离线交互稿，数值和账号名称均为虚构示例，不请求服务或读取密钥。正式数据来自 <code>GET /api/v1/admin/accounts/:id/stats?days=7/30</code> 的 <code>history[].requests</code> 与 <code>history[].actual_cost</code>；后者是账号口径费用，不等同于上游套餐剩余额度。</p>
+  </div>
+  <script>
+    const $ = id => document.getElementById(id);
+    const accounts = {
+      north: { name: '主账号 · 北区', factor: 1 },
+      east: { name: '备用账号 · 东区', factor: .62 },
+      south: { name: '团队账号 · 南区', factor: 1.34 }
+    };
+    const state = { account: 'north', size: 'large', theme: 'pine', wallpaper: 'light', days: 7,
+      metric: 'requests', status: 'normal', selected: null, refreshing: false };
+    const preview = new URLSearchParams(location.search);
+    if (preview.get('days') === '30') state.days = 30;
+    if (preview.get('metric') === 'cost') state.metric = 'cost';
+    if (preview.get('size') === 'medium') state.size = 'medium';
+    if (['pine', 'graphite', 'glass'].includes(preview.get('theme'))) state.theme = preview.get('theme');
+    const pattern = [28, 36, 31, 47, 54, 42, 58, 49, 63, 37, 45, 72, 68, 51, 59, 76, 66, 55, 82, 71, 64, 88, 74, 69, 92, 84, 78, 103, 95, 87];
+    const dates = Array.from({ length: 30 }, (_, index) => {
+      const day = new Date();
+      day.setDate(day.getDate() - (29 - index));
+      return `${String(day.getMonth() + 1).padStart(2, '0')}.${String(day.getDate()).padStart(2, '0')}`;
+    });
+    const money = value => `$${value.toFixed(2)}`;
+    const data = () => pattern.map((base, index) => {
+      const requests = Math.round(base * accounts[state.account].factor);
+      return { date: dates[index], requests,
+        actualCost: Math.round(requests * (0.028 + (index % 4) * .004) * 100) / 100 };
+    }).slice(-state.days);
+    const selectedIndex = values => state.selected === null ? values.length - 1 : Math.max(0, Math.min(values.length - 1, state.selected));
+    const yText = value => state.metric === 'cost' ? `$${value.toFixed(value >= 10 ? 0 : 1)}` : String(Math.round(value));
+    function chartMarkup(values) {
+      const medium = state.size === 'medium';
+      const left = medium ? 30 : 36, right = 378, top = medium ? 8 : 12;
+      const bottom = medium ? 47 : 145, labelY = medium ? 62 : 164;
+      const width = right - left, height = bottom - top;
+      const getValue = row => state.metric === 'requests' ? row.requests : row.actualCost;
+      const max = Math.max(1, ...values.map(getValue)) * 1.12;
+      const x = index => left + (index + .5) * width / values.length;
+      const y = value => bottom - value / max * height;
+      const grid = [0, .5, 1].map(step => `<line class="chart-grid" x1="${left}" y1="${y(max * step)}" x2="${right}" y2="${y(max * step)}"/><text class="chart-label" x="30" y="${y(max * step) + 3}" text-anchor="end">${yText(max * step)}</text>`).join('');
+      const labels = values.map((row, i) => state.days === 7 || (i % 7 === 0 && i < values.length - 3) || i === values.length - 1 ?
+        `<text class="chart-label" x="${x(i)}" y="${labelY}" text-anchor="middle">${row.date}</text>` : '').join('');
+      const active = selectedIndex(values);
+      let marks;
+      if (state.days === 7) {
+        const barWidth = Math.min(30, width / values.length - 18);
+        marks = values.map((row, i) => {
+          const valueY = y(getValue(row));
+          return `<g class="chart-point" tabindex="0" role="button" aria-label="${row.date}，请求 ${row.requests} 次，账号费用 ${money(row.actualCost)}" data-index="${i}"><rect class="chart-bar${i === active ? ' selected' : ''}" x="${x(i) - barWidth / 2}" y="${valueY}" width="${barWidth}" height="${bottom - valueY}" rx="2"/><rect class="chart-hit" x="${x(i) - width / values.length / 2}" y="${top}" width="${width / values.length}" height="${bottom - top}"/></g>`;
+        }).join('');
+      } else {
+        const points = values.map((row, i) => `${x(i).toFixed(1)},${y(getValue(row)).toFixed(1)}`).join(' ');
+        const area = `M ${x(0)},${bottom} L ${points.replaceAll(' ', ' L ')} L ${x(values.length - 1)},${bottom} Z`;
+        marks = `<path class="chart-area" d="${area}"/><polyline class="chart-line" points="${points}"/>` +
+          values.map((row, i) => `<g class="chart-point" tabindex="0" role="button" aria-label="${row.date}，请求 ${row.requests} 次，账号费用 ${money(row.actualCost)}" data-index="${i}"><rect class="chart-hit" x="${x(i) - width / values.length / 2}" y="${top}" width="${width / values.length}" height="${bottom - top}"/>${i === active ? `<circle class="chart-dot" cx="${x(i)}" cy="${y(getValue(row))}" r="5"/>` : ''}</g>`).join('');
+      }
+      return grid + marks + labels;
+    }
+    function render() {
+      const values = data();
+      const active = values[selectedIndex(values)];
+      $('card').dataset.size = state.size;
+      $('card').dataset.theme = state.theme;
+      $('desktop').dataset.wallpaper = state.wallpaper;
+      $('card-account').textContent = accounts[state.account].name;
+      $('size-label').textContent = state.size === 'large' ? '4×4 · 单账号趋势' : '2×4 · 单账号趋势';
+      $('total-requests').textContent = state.status === 'empty' ? '0' : values.reduce((sum, row) => sum + row.requests, 0).toLocaleString('zh-CN');
+      $('total-cost').textContent = state.status === 'empty' ? '$0.00' : money(values.reduce((sum, row) => sum + row.actualCost, 0));
+      $('chart-wrap').hidden = state.status === 'empty';
+      $('card-message').hidden = state.status !== 'empty';
+      $('card-message').textContent = state.status === 'empty' ? '这段时间暂无请求记录' : '';
+      $('card-status').textContent = state.refreshing ? '同步中' : state.status === 'offline' ? '连接失败 · 上次数据' : '刚刚更新';
+      $('refresh').disabled = state.refreshing;
+      $('chart').style.setProperty('--chart-color', state.metric === 'requests' ? 'var(--req)' : 'var(--cost)');
+      $('chart').setAttribute('viewBox', state.size === 'medium' ? '0 0 390 65' : '0 0 390 180');
+      $('chart').setAttribute('aria-label', `近 ${state.days} 天每日${state.metric === 'requests' ? '请求数' : '账号费用'}图表`);
+      $('chart').innerHTML = chartMarkup(values);
+      $('chart-caption').textContent = state.metric === 'requests' ? '每日请求' : '每日账号费用';
+      $('day-caption').textContent = state.status === 'empty' ? '暂无数据' : `${active.date} · ${state.metric === 'requests' ? `${active.requests} 次` : money(active.actualCost)}`;
+      $('day-detail').textContent = state.status === 'empty' ? '暂无记录' : `${active.date} · ${active.requests} 次请求 · ${money(active.actualCost)}`;
+      $('day-detail-sub').textContent = state.status === 'offline' ? '连接失败，图表保留上次成功数据' : '点击或触摸图表查看单日请求及费用';
+      document.querySelectorAll('[data-size], [data-theme], [data-wallpaper], [data-days], [data-metric], [data-state]').forEach(button => {
+        const key = button.dataset.size ? 'size' : button.dataset.theme ? 'theme' : button.dataset.wallpaper ? 'wallpaper' : button.dataset.days ? 'days' : button.dataset.metric ? 'metric' : 'status';
+        const value = key === 'days' ? Number(button.dataset.days) : button.dataset[key === 'status' ? 'state' : key];
+        button.setAttribute('aria-pressed', String(state[key] === value));
+      });
+    }
+    document.querySelectorAll('[data-size], [data-theme], [data-wallpaper], [data-days], [data-metric], [data-state]').forEach(button => button.addEventListener('click', () => {
+      if (button.dataset.size) state.size = button.dataset.size;
+      if (button.dataset.theme) state.theme = button.dataset.theme;
+      if (button.dataset.wallpaper) state.wallpaper = button.dataset.wallpaper;
+      if (button.dataset.days) { state.days = Number(button.dataset.days); state.selected = null; }
+      if (button.dataset.metric) state.metric = button.dataset.metric;
+      if (button.dataset.state) state.status = button.dataset.state;
+      render();
+    }));
+    $('account-select').addEventListener('change', event => { state.account = event.target.value; state.selected = null; render(); });
+    $('chart').addEventListener('click', event => {
+      const point = event.target.closest('[data-index]');
+      if (point) { state.selected = Number(point.dataset.index); render(); }
+    });
+    $('chart').addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const point = event.target.closest('[data-index]');
+      if (point) { event.preventDefault(); state.selected = Number(point.dataset.index); render(); }
+    });
+    $('refresh').addEventListener('click', () => {
+      if (state.refreshing) return;
+      state.refreshing = true;
+      render();
+      setTimeout(() => { state.refreshing = false; state.status = 'normal'; render(); }, 700);
+    });
+    render();
+  </script>
+</body>
+</html>

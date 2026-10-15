@@ -1,0 +1,12 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "Sub2API 上游账号额度监控" },
+    { "name": "entry_ability_desc", "value": "额度详情" },
+    { "name": "quota_form_label", "value": "套餐额度" },
+    { "name": "quota_form_desc", "value": "两个账号与异常总数" },
+    { "name": "quota_form_display_name", "value": "Sub2API 套餐额度" },
+    { "name": "trend_form_label", "value": "用量趋势" },
+    { "name": "trend_form_desc", "value": "单账号近 7 或 30 天请求与费用" },
+    { "name": "trend_form_display_name", "value": "Sub2API 用量趋势" }
+  ]
+}

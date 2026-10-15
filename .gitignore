@@ -1,0 +1,17 @@
+/oh_modules/
+/node_modules/
+/.hvigor/
+/.idea/
+/local.properties
+/build-profile.json5
+**/build/
+**/.preview/
+*.hap
+*.app
+*.p12
+*.p7b
+*.pem
+*.key
+*.cer
+.env
+.env.*

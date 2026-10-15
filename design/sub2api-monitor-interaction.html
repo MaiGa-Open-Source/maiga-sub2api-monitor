@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>套餐额度 · 设置与卡片交互稿</title>
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+      color: #20282a;
+      background: #f1f3f3;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #287d73; outline-offset: 3px; }
+    .shell { max-width: 1300px; min-height: 100vh; margin: auto; padding: 28px 36px 38px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 22px; border-bottom: 1px solid #dce2e1; }
+    .identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .mark { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 8px; background: #253e36; color: #fff; font-size: 17px; font-weight: 800; }
+    .identity strong { display: block; font-size: 17px; line-height: 1.3; }
+    .identity small { display: block; margin-top: 3px; color: #687475; font-size: 12px; }
+    .draft-tag { border: 1px solid #b8c7c5; padding: 6px 10px; border-radius: 4px; color: #4e6864; font-size: 12px; white-space: nowrap; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(370px, .85fr); gap: 30px; align-items: start; padding-top: 28px; }
+    .editor { min-width: 0; background: #fff; border: 1px solid #e0e5e4; border-radius: 8px; box-shadow: 0 6px 22px rgba(28, 45, 43, .035); }
+    .editor-header { padding: 25px 28px 0; }
+    .eyebrow { margin: 0 0 7px; color: #667574; font-size: 12px; font-weight: 700; }
+    h1 { margin: 0; font-size: 25px; line-height: 1.32; }
+    .subheading { margin: 8px 0 0; color: #687475; font-size: 13px; line-height: 1.5; }
+    .tabs { display: flex; gap: 25px; margin-top: 25px; border-bottom: 1px solid #e4e9e8; }
+    .tab { border: 0; border-bottom: 2px solid transparent; padding: 0 2px 12px; background: transparent; color: #697576; font-weight: 600; font-size: 14px; }
+    .tab[aria-selected="true"] { border-color: #247e6d; color: #1b5e52; }
+    .pane { padding: 25px 28px 20px; min-height: 490px; }
+    .pane[hidden] { display: none; }
+    .section-title { margin: 0 0 5px; font-size: 17px; line-height: 1.35; }
+    .section-copy { margin: 0 0 24px; color: #687475; font-size: 12px; line-height: 1.55; }
+    .setting { padding: 19px 0; border-top: 1px solid #edf0ef; }
+    .setting:first-of-type { border-top: 0; padding-top: 2px; }
+    .setting-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .setting-label { font-size: 14px; font-weight: 700; }
+    .setting-value { flex: none; color: #276f63; font-size: 13px; font-weight: 700; }
+    .hint { margin: 9px 0 0; color: #6c7979; font-size: 12px; line-height: 1.5; }
+    .title-input { width: 100%; height: 44px; border: 1px solid #d9e2df; border-radius: 6px; padding: 0 12px; background: #fff; color: #253330; font-size: 14px; }
+    .choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .choice { min-height: 48px; border: 1px solid #d9e2df; border-radius: 6px; background: #fff; color: #354343; font-size: 13px; font-weight: 600; }
+    .choice[data-active="true"] { border-color: #247e6d; background: #eaf5f0; color: #18594d; box-shadow: inset 0 0 0 1px #247e6d; }
+    .choice small { display: block; margin-top: 2px; color: #73807d; font-size: 10px; font-weight: 500; }
+    .stepper { display: inline-flex; align-items: center; border: 1px solid #d9e2df; border-radius: 6px; overflow: hidden; height: 43px; }
+    .stepper button { width: 43px; height: 43px; border: 0; background: #f7f9f8; color: #1c5b52; font-size: 21px; }
+    .stepper button:disabled { color: #aab5b3; cursor: not-allowed; }
+    .stepper input { width: 67px; height: 100%; border: 0; border-left: 1px solid #e1e7e5; border-right: 1px solid #e1e7e5; outline: none; text-align: center; color: #21302e; font-weight: 700; appearance: textfield; }
+    .stepper input::-webkit-inner-spin-button { appearance: none; }
+    .stepper-unit { padding-left: 11px; color: #596867; font-size: 13px; }
+    select { min-width: 154px; height: 43px; border: 1px solid #d9e2df; border-radius: 6px; padding: 0 13px; background: #fff; color: #253330; }
+    .inline-note { display: flex; gap: 10px; padding: 13px 14px; border: 1px solid #dce6e4; border-radius: 6px; background: #f5f9f8; color: #4d6562; font-size: 12px; line-height: 1.5; }
+    .inline-note b { flex: none; color: #2a7569; }
+    .layout-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .layout-mode { display: flex; align-items: center; gap: 13px; min-height: 82px; padding: 12px; border: 1px solid #dce3e1; border-radius: 6px; background: #fff; text-align: left; }
+    .layout-mode[data-active="true"] { border-color: #247e6d; background: #f3faf7; box-shadow: inset 0 0 0 1px #247e6d; }
+    .layout-mode strong, .layout-mode small { display: block; }
+    .layout-mode strong { color: #263a35; font-size: 13px; }
+    .layout-mode small { margin-top: 3px; color: #75837f; font-size: 11px; }
+    .layout-thumb { display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 62px; height: 42px; flex: none; border: 1px solid #afc5bd; border-radius: 4px; padding: 7px; background: #e7f1ed; }
+    .layout-thumb i { display: block; height: 5px; border-radius: 2px; background: #6e9f8c; }
+    .layout-thumb i:last-child { width: 72%; }
+    .layout-thumb.square { width: 43px; height: 43px; align-items: center; }
+    .layout-thumb.square i:first-child { width: 70%; height: 11px; background: #247e6d; }
+    .layout-thumb.square i:last-child { width: 85%; height: 4px; }
+    .account-options { display: grid; gap: 8px; }
+    .account-option { display: flex; align-items: center; gap: 10px; min-height: 57px; border: 1px solid #dce3e1; border-radius: 6px; padding: 9px 12px; background: #fff; text-align: left; }
+    .account-option[data-active="true"] { border-color: #247e6d; background: #f3faf7; }
+    .account-option:disabled { opacity: .55; cursor: not-allowed; }
+    .selection-mark { display: grid; place-items: center; width: 18px; height: 18px; flex: none; border: 1px solid #b6c5bf; border-radius: 4px; color: transparent; font-size: 12px; font-weight: 900; }
+    .account-option[data-active="true"] .selection-mark { border-color: #247e6d; background: #247e6d; color: #fff; }
+    .account-option strong { display: block; color: #283b35; font-size: 13px; }
+    .account-option small { display: block; margin-top: 2px; color: #71817c; font-size: 11px; }
+    .account-option em { margin-left: auto; color: #536e64; font-size: 12px; font-style: normal; font-weight: 700; }
+    .themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .theme { display: flex; align-items: center; gap: 11px; min-height: 73px; padding: 10px; border: 1px solid #dce3e1; border-radius: 6px; background: #fff; text-align: left; }
+    .theme[data-active="true"] { border-color: #247e6d; box-shadow: inset 0 0 0 1px #247e6d; }
+    .theme[data-theme="glass"] { grid-column: 1 / -1; }
+    .theme-chip { display: flex; align-items: center; gap: 3px; width: 55px; height: 48px; flex: none; padding: 7px; border-radius: 4px; background: var(--chip-bg); }
+    .theme-chip i { display: block; width: 8px; height: 25px; border-radius: 2px; background: var(--chip-accent); }
+    .theme-chip i:nth-child(2) { height: 17px; background: var(--chip-ink); }
+    .theme-chip i:nth-child(3) { height: 10px; background: var(--chip-warning); }
+    .theme-chip.glass-chip { position: relative; overflow: hidden; background: repeating-linear-gradient(115deg, #9eb9bb 0 7px, #d7a99c 7px 13px, #476c79 13px 20px); }
+    .theme-chip.glass-chip::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgba(255, 255, 255, .9); border-radius: 3px; background: rgba(248, 253, 252, .48); -webkit-backdrop-filter: blur(4px) saturate(1.2); backdrop-filter: blur(4px) saturate(1.2); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .94), 0 2px 5px rgba(28, 48, 53, .18); }
+    .theme-chip.glass-chip i { position: relative; background: #246e71; }
+    .theme strong { display: block; font-size: 13px; }
+    .theme small { display: block; margin-top: 3px; color: #798482; font-size: 11px; }
+    .range-row { display: flex; align-items: center; gap: 14px; }
+    .range-row input { width: 100%; accent-color: #257e70; }
+    .range-ends { display: flex; justify-content: space-between; color: #80908d; font-size: 11px; }
+    .segmented { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid #dce4e1; border-radius: 6px; background: #f5f7f6; }
+    .segmented button { border: 0; border-radius: 4px; padding: 9px 16px; background: transparent; color: #5f6d6a; font-size: 12px; font-weight: 600; }
+    .segmented button[aria-pressed="true"] { background: #fff; color: #1c5c52; box-shadow: 0 1px 3px rgba(20, 46, 42, .12); }
+    .connection-summary { display: grid; gap: 14px; padding-top: 4px; }
+    .read-only { padding: 14px 15px; border: 1px solid #e0e6e3; border-radius: 6px; background: #fafbfb; }
+    .read-only small { display: block; margin-bottom: 5px; color: #687674; font-size: 11px; }
+    .read-only strong { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+    .privacy-note { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e8edeb; color: #6b7876; font-size: 12px; line-height: 1.65; }
+    .actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 18px 28px; border-top: 1px solid #e8eceb; }
+    .save-message { margin-right: auto; color: #377567; font-size: 12px; }
+    .text-button { border: 0; background: transparent; color: #546663; font-size: 13px; font-weight: 600; }
+    .primary-button { min-width: 98px; height: 39px; border: 0; border-radius: 5px; background: #247e6d; color: #fff; font-size: 13px; font-weight: 700; }
+    .preview-column { position: sticky; top: 24px; min-width: 0; }
+    .preview-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; margin: 0 0 14px; }
+    .preview-head h2 { margin: 0; font-size: 18px; }
+    .preview-head span { color: #71807e; font-size: 12px; white-space: nowrap; }
+    .scene { position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; gap: 25px; min-height: 420px; padding: 26px 22px 24px; overflow: hidden; border: 1px solid #cfd9d6; border-radius: 8px; background: linear-gradient(145deg, #d8e5df, #a9c5c8 54%, #dfc5ba); transition: background .2s ease; }
+    .scene[data-wallpaper="dark"] { border-color: #48575b; background: linear-gradient(145deg, #20363d, #48636b 54%, #725c64); }
+    .wallpaper-lines { position: absolute; inset: 0; z-index: 0; background: repeating-linear-gradient(125deg, transparent 0 48px, rgba(255, 255, 255, .3) 49px 50px, transparent 51px 78px), repeating-linear-gradient(35deg, transparent 0 105px, rgba(33, 79, 83, .13) 106px 108px, transparent 109px 170px); pointer-events: none; }
+    .scene[data-wallpaper="dark"] .wallpaper-lines { opacity: .48; }
+    .desktop-icons { position: absolute; inset: 62px 18px 42px; z-index: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, 1fr); align-items: center; justify-items: center; pointer-events: none; }
+    .desktop-app { display: grid; justify-items: center; gap: 5px; width: 64px; color: #344c51; font-size: 10px; font-weight: 600; text-shadow: 0 1px 2px rgba(255, 255, 255, .8); }
+    .desktop-app i { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid rgba(255, 255, 255, .54); border-radius: 11px; background: var(--app-color); color: #fff; font-size: 23px; font-style: normal; font-weight: 500; text-shadow: 0 1px 2px rgba(15, 38, 44, .24); box-shadow: 0 3px 7px rgba(22, 53, 62, .16); }
+    .scene[data-wallpaper="dark"] .desktop-app { color: #f4f8f7; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+    .scene-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; color: #455954; font-size: 12px; font-weight: 700; }
+    .scene[data-wallpaper="dark"] .scene-top { color: #dbe6e2; }
+    .scene-stroke { width: 36px; height: 4px; border-radius: 3px; background: currentColor; opacity: .6; }
+    .card-wrap { position: relative; z-index: 1; display: grid; place-items: center; flex: 1; }
+    .quota-card { width: min(100%, 420px); aspect-ratio: 2 / 1; min-height: 170px; display: grid; grid-template-rows: 34px 1fr 1fr 26px; padding: 9px 15px; border-radius: 8px; background: var(--surface-alpha); color: var(--card-ink); box-shadow: 0 10px 22px rgba(0, 0, 0, .13); overflow: hidden; transition: background .2s ease, color .2s ease; }
+    .quota-card.glass { position: relative; border: 1px solid rgba(255, 255, 255, .88); background: var(--surface-alpha); -webkit-backdrop-filter: blur(11px) saturate(1.28) brightness(1.05); backdrop-filter: blur(11px) saturate(1.28) brightness(1.05); box-shadow: 0 14px 30px rgba(35, 59, 62, .22), inset 0 1px 0 rgba(255, 255, 255, .92); }
+    .quota-card.glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .72), inset -1px -1px 0 rgba(95, 117, 121, .2); pointer-events: none; }
+    .scene[data-wallpaper="dark"] .quota-card.glass { border-color: rgba(241, 255, 252, .5); -webkit-backdrop-filter: blur(11px) saturate(1.22) brightness(.95); backdrop-filter: blur(11px) saturate(1.22) brightness(.95); box-shadow: 0 16px 34px rgba(8, 22, 27, .39), inset 0 1px 0 rgba(255, 255, 255, .45); }
+    .scene[data-wallpaper="dark"] .quota-card.glass::after { box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .38), inset -1px -1px 0 rgba(8, 22, 27, .24); }
+    .quota-card[hidden] { display: none; }
+    .quota-card.single { width: min(100%, 210px); aspect-ratio: 1 / 1; min-height: 210px; grid-template-rows: 31px auto 1fr 27px; padding: 11px 12px; }
+    .card-top, .card-bottom, .account { display: flex; align-items: center; min-width: 0; }
+    .card-top { gap: 8px; }
+    .card-brand { min-width: 0; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 800; }
+    .quota-card.single .card-brand { max-width: 148px; }
+    .card-spacer { flex: 1; min-width: 0; }
+    .card-status { color: var(--card-warning); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .icon-button { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 0; border-radius: 4px; background: transparent; color: var(--card-ink); font-size: 24px; line-height: 1; }
+    .icon-button:hover { background: rgba(127, 127, 127, .13); }
+    .icon-button:disabled { opacity: .55; cursor: wait; }
+    .account { justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--card-line); }
+    .account:nth-of-type(3) { border-bottom: 0; }
+    .account-copy { min-width: 0; }
+    .account-name { display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
+    .account-meta { display: block; margin-top: 3px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--card-muted); font-size: 10px; }
+    .account-value { flex: none; text-align: right; }
+    .account-value strong { display: block; color: var(--card-healthy); font-size: 19px; line-height: 1.05; }
+    .account-value small { display: block; margin-top: 3px; color: var(--card-muted); font-size: 10px; }
+    .account-value.low strong { color: var(--card-warning); }
+    .account-value.empty strong { color: var(--card-error); }
+    .account-value.unknown strong { color: var(--card-warning); }
+    .card-bottom { gap: 8px; color: var(--card-muted); font-size: 10px; }
+    .card-bottom span:last-child { margin-left: auto; white-space: nowrap; }
+    .single-account { min-width: 0; padding-top: 5px; }
+    .single-account strong, .single-account small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .single-account strong { font-size: 13px; }
+    .single-account small { margin-top: 4px; color: var(--card-muted); font-size: 10px; }
+    .single-metric { display: grid; place-items: center; min-height: 0; }
+    .ring-graphic { position: relative; display: grid; place-items: center; width: 96px; height: 96px; }
+    .ring-graphic svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .ring-track, .ring-fill { fill: none; stroke-width: 8; }
+    .ring-track { stroke: var(--card-muted); opacity: .55; }
+    .ring-graphic[data-unknown="true"] .ring-track { stroke-dasharray: 2 7; opacity: .75; }
+    .ring-fill { stroke: var(--ring-color); stroke-linecap: round; stroke-dasharray: 251.33; transition: stroke-dashoffset .22s ease, stroke .22s ease; }
+    .ring-copy { z-index: 1; max-width: 76px; text-align: center; }
+    .ring-copy strong { display: block; color: var(--ring-color); font-size: 25px; line-height: 1.05; }
+    .ring-copy small { display: block; margin-top: 4px; color: var(--card-muted); font-size: 9px; line-height: 1.15; }
+    .single-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 5px; border-top: 1px solid var(--card-line); color: var(--card-muted); font-size: 10px; white-space: nowrap; }
+    .single-bottom strong { overflow: hidden; text-overflow: ellipsis; color: var(--card-warning); font-size: 10px; }
+    .scene-foot { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 10px; color: #536961; font-size: 11px; }
+    .scene[data-wallpaper="dark"] .scene-foot { color: #d6e1dd; }
+    .scene-foot strong { font-size: 12px; }
+    .preview-controls { margin-top: 19px; }
+    .preview-controls label { display: block; margin-bottom: 8px; color: #53615f; font-size: 12px; font-weight: 700; }
+    .state-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .state-tabs button { min-height: 36px; border: 1px solid #d2dbd8; border-radius: 5px; background: #fff; color: #596865; font-size: 11px; font-weight: 600; }
+    .state-tabs button[aria-pressed="true"] { border-color: #286f63; color: #1e6258; background: #eaf4f0; }
+    .progress-controls { margin-top: 15px; padding-top: 15px; border-top: 1px solid #d8dfdc; }
+    .progress-controls[hidden] { display: none; }
+    .progress-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; color: #53615f; font-size: 12px; font-weight: 700; }
+    .progress-heading output { color: #1e6258; }
+    .progress-controls input { width: 100%; accent-color: #257e70; }
+    .progress-ends { display: flex; justify-content: space-between; margin-top: 2px; color: #71817c; font-size: 11px; }
+    .activity { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; padding: 13px 1px; border-top: 1px solid #d8dfdc; color: #5d6e69; font-size: 12px; }
+    .activity strong { color: #273c36; font-weight: 700; text-align: right; }
+    .prototype-note { max-width: 1300px; margin: 23px auto 0; padding: 13px 16px; border-left: 3px solid #a9bcb6; background: #e9eeeb; color: #53625f; font-size: 12px; line-height: 1.65; }
+    @media (max-width: 900px) {
+      .shell { padding: 20px 18px 30px; }
+      .workspace { grid-template-columns: 1fr; gap: 25px; }
+      .preview-column { position: static; }
+      .pane { min-height: 0; }
+      .scene { min-height: 350px; }
+    }
+    @media (max-width: 520px) {
+      .shell { padding: 15px 12px 24px; }
+      .topbar { padding-bottom: 15px; }
+      .identity strong { font-size: 15px; }
+      .identity small { font-size: 11px; }
+      .draft-tag { font-size: 10px; }
+      .workspace { padding-top: 16px; }
+      .editor-header { padding: 19px 18px 0; }
+      h1 { font-size: 22px; }
+      .tabs { gap: 21px; }
+      .pane { padding: 20px 18px; }
+      .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .themes { gap: 7px; }
+      .theme { gap: 8px; padding: 7px; }
+      .theme-chip { width: 40px; height: 40px; padding: 5px; }
+      .theme-chip i { width: 6px; }
+      .theme strong { font-size: 12px; }
+      .theme small { font-size: 10px; }
+      .layout-mode { gap: 7px; padding: 8px; }
+      .layout-thumb { width: 45px; height: 38px; padding: 5px; }
+      .layout-thumb.square { width: 38px; height: 38px; }
+      .layout-mode strong { font-size: 12px; }
+      .layout-mode small { font-size: 10px; }
+      .actions { padding: 15px 18px; }
+      .scene { padding: 18px 12px; min-height: 310px; }
+      .desktop-icons { inset: 49px 6px 33px; }
+      .desktop-app { width: 52px; font-size: 9px; }
+      .desktop-app i { width: 40px; height: 40px; border-radius: 9px; font-size: 20px; }
+      .quota-card { padding: 8px 12px; min-height: 160px; }
+      .account-name { max-width: 180px; }
+      .account-meta { max-width: 180px; }
+      .account-value strong { font-size: 18px; }
+      .state-tabs button { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="identity"><span class="mark">S2</span><div><strong>套餐额度</strong><small>Sub2API · 设置方案</small></div></div>
+      <span class="draft-tag">交互稿 / 本地预览</span>
+    </header>
+
+    <main class="workspace">
+      <section class="editor" aria-label="设置设计">
+        <div class="editor-header">
+          <p class="eyebrow">偏好设置</p>
+          <h1>卡片与刷新</h1>
+          <p class="subheading">调整后可在右侧查看桌面卡片效果。</p>
+          <div class="tabs" role="tablist" aria-label="设置分类">
+            <button class="tab" id="tab-connection" role="tab" aria-controls="pane-connection" aria-selected="false" data-pane="connection">连接</button>
+            <button class="tab" id="tab-refresh" role="tab" aria-controls="pane-refresh" aria-selected="false" data-pane="refresh">刷新</button>
+            <button class="tab" id="tab-layout" role="tab" aria-controls="pane-layout" aria-selected="true" data-pane="layout">卡片</button>
+            <button class="tab" id="tab-appearance" role="tab" aria-controls="pane-appearance" aria-selected="false" data-pane="appearance">外观</button>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-connection" role="tabpanel" aria-labelledby="tab-connection" hidden>
+          <h2 class="section-title">连接配置</h2>
+          <p class="section-copy">这里仅展示已有连接的形态。</p>
+          <div class="connection-summary">
+            <div class="read-only"><small>服务地址</small><strong>https://example.com</strong></div>
+            <div class="read-only"><small>Admin Key</small><strong>已保存在此设备</strong></div>
+          </div>
+          <p class="privacy-note">正式应用保留原有的本机配置方式。这个交互稿没有密钥输入，也不会连接 Sub2API。</p>
+        </div>
+
+        <div class="pane" id="pane-refresh" role="tabpanel" aria-labelledby="tab-refresh" hidden>
+          <h2 class="section-title">刷新控制</h2>
+            <p class="section-copy">系统唤醒卡片与网络请求限频分别设置。</p>
+          <div class="setting">
+            <div class="setting-head"><label class="setting-label" id="period-label">卡片后台周期</label><span class="setting-value" id="period-value">1 小时</span></div>
+            <div class="choices" id="period-choices" role="group" aria-labelledby="period-label">
+              <button class="choice" data-period="30">30 分钟<small>系统最短</small></button>
+              <button class="choice" data-period="60">1 小时</button>
+              <button class="choice" data-period="120">2 小时</button>
+              <button class="choice" data-period="240">4 小时</button>
+            </div>
+            <p class="hint">这是系统尝试唤醒卡片的周期，实际触发时间可能延后。</p>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><label class="setting-label" for="request-interval">自动请求限频间隔</label><span class="setting-value" id="interval-value">60 分钟</span></div>
+            <div class="stepper">
+              <button id="interval-minus" type="button" aria-label="减少自动请求间隔">−</button>
+              <input id="request-interval" type="number" min="1" max="1440" step="1" value="60" inputmode="numeric">
+              <button id="interval-plus" type="button" aria-label="增加自动请求间隔">+</button>
+            </div><span class="stepper-unit">分钟</span>
+            <p class="hint">默认 60 分钟、最低 1 分钟。它只限制自动请求频率，不会自行启动定时循环。</p>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><label class="setting-label" for="backoff">自动失败退避上限</label></div>
+            <select id="backoff"><option value="5">5 分钟</option><option value="15">15 分钟</option><option value="30">30 分钟</option><option value="60">60 分钟</option></select>
+            <p class="hint">连续失败时自动请求逐步放慢；手动刷新不受此限制。</p>
+          </div>
+          <div class="inline-note"><b>⟳</b><span>手动刷新没有冷却时间。正在进行的请求会合并为一次，避免重复并发。</span></div>
+        </div>
+
+        <div class="pane" id="pane-layout" role="tabpanel" aria-labelledby="tab-layout">
+          <h2 class="section-title">卡片内容</h2>
+          <p class="section-copy">选择桌面卡片尺寸，以及需要关注的账号。</p>
+          <div class="setting">
+            <div class="setting-head"><label class="setting-label" for="card-title">卡片主标题</label><span class="setting-value" id="title-count">7/24</span></div>
+            <input class="title-input" id="card-title" type="text" maxlength="24" value="Sub2API" placeholder="Sub2API" autocomplete="off">
+            <p class="hint">留空时使用 Sub2API；标题较长时卡片内会省略。</p>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><span class="setting-label" id="layout-label">显示方式</span></div>
+            <div class="layout-modes" role="group" aria-labelledby="layout-label">
+              <button class="layout-mode" data-layout="dual" type="button"><span class="layout-thumb"><i></i><i></i></span><span><strong>双账号</strong><small>横向 · 2×4</small></span></button>
+              <button class="layout-mode" data-layout="single" type="button"><span class="layout-thumb square"><i></i><i></i></span><span><strong>单账号</strong><small>方形 · 2×2</small></span></button>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><span class="setting-label" id="account-label">显示账号</span><span class="setting-value" id="account-count">已选 2 个</span></div>
+            <div class="account-options" role="group" aria-labelledby="account-label">
+              <button class="account-option" data-account="north" type="button"><span class="selection-mark">✓</span><span><strong>主账号 · 北区</strong><small>Claude Pro · 本周</small></span></button>
+              <button class="account-option" data-account="east" type="button"><span class="selection-mark">✓</span><span><strong>备用账号 · 东区</strong><small>Claude Pro · 本周</small></span></button>
+              <button class="account-option" data-account="south" type="button"><span class="selection-mark">✓</span><span><strong>团队账号 · 南区</strong><small>Claude Max · 本周</small></span></button>
+            </div>
+            <p class="hint" id="account-hint">双账号卡片最多选择 2 个；取消一个后可选其他账号。</p>
+          </div>
+          <div class="inline-note"><b>▣</b><span>圆环表示剩余比例：0% 空环，100% 满环。未知额度用虚线环区分；连接失败仍保留上次成功数据。</span></div>
+        </div>
+
+        <div class="pane" id="pane-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden>
+          <h2 class="section-title">卡片外观</h2>
+          <p class="section-copy">预览卡片在浅色和深色桌面上的表现。</p>
+          <div class="setting">
+            <div class="setting-head"><span class="setting-label" id="theme-label">颜色风格</span></div>
+            <div class="themes" id="themes" role="group" aria-labelledby="theme-label">
+              <button class="theme" data-theme="pine" style="--chip-bg:#f9fbfa;--chip-ink:#24332f;--chip-accent:#187b59;--chip-warning:#a66d1d"><span class="theme-chip"><i></i><i></i><i></i></span><span><strong>云松</strong><small>原有绿系</small></span></button>
+              <button class="theme" data-theme="graphite" style="--chip-bg:#252d32;--chip-ink:#f4f5f2;--chip-accent:#7fd2ad;--chip-warning:#f1b95e"><span class="theme-chip"><i></i><i></i><i></i></span><span><strong>石墨</strong><small>深色高对比</small></span></button>
+              <button class="theme" data-theme="mist" style="--chip-bg:#eaf3f7;--chip-ink:#203b4c;--chip-accent:#2879a4;--chip-warning:#a87124"><span class="theme-chip"><i></i><i></i><i></i></span><span><strong>海雾</strong><small>冷静蓝灰</small></span></button>
+              <button class="theme" data-theme="coral" style="--chip-bg:#fff7f4;--chip-ink:#392b31;--chip-accent:#ae5561;--chip-warning:#a66a24"><span class="theme-chip"><i></i><i></i><i></i></span><span><strong>珊瑚</strong><small>温和暖调</small></span></button>
+              <button class="theme" data-theme="glass" type="button"><span class="theme-chip glass-chip"><i></i><i></i><i></i></span><span><strong>琉璃</strong><small>自适应浅色与深色桌面</small></span></button>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><label class="setting-label" for="transparency" id="transparency-label">卡片背景透明度</label><span class="setting-value" id="transparency-value">0%</span></div>
+            <div class="range-row"><input id="transparency" type="range" min="0" max="50" step="5" value="0"></div>
+            <div class="range-ends"><span id="transparency-start">不透明</span><span id="transparency-end">50%</span></div>
+            <p class="hint" id="transparency-hint">只调整背景，文字、额度和状态标识保持不透明。</p>
+          </div>
+          <div class="setting">
+            <div class="setting-head"><span class="setting-label" id="wallpaper-label">桌面预览</span></div>
+            <div class="segmented" role="group" aria-labelledby="wallpaper-label">
+              <button data-wallpaper="light" aria-pressed="true">浅色</button>
+              <button data-wallpaper="dark" aria-pressed="false">深色</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions"><span class="save-message" id="save-message" role="status"></span><button class="text-button" id="reset" type="button">恢复默认</button><button class="primary-button" id="save" type="button">保存方案</button></div>
+      </section>
+
+      <aside class="preview-column" aria-label="卡片预览">
+        <div class="preview-head"><h2>桌面卡片预览</h2><span id="preview-size">2×4 · 双账号</span></div>
+        <div class="scene" id="scene" data-wallpaper="light">
+          <div class="wallpaper-lines" aria-hidden="true"></div>
+          <div class="desktop-icons" aria-hidden="true">
+            <span class="desktop-app" style="--app-color:#bd695f"><i>✦</i><small>图库</small></span>
+            <span class="desktop-app" style="--app-color:#467d96"><i>◉</i><small>天气</small></span>
+            <span class="desktop-app" style="--app-color:#557c69"><i>▦</i><small>日历</small></span>
+            <span class="desktop-app" style="--app-color:#ad805a"><i>♪</i><small>音乐</small></span>
+            <span class="desktop-app" style="--app-color:#667ba0"><i>⌁</i><small>浏览器</small></span>
+            <span class="desktop-app" style="--app-color:#659b91"><i>◈</i><small>文件</small></span>
+            <span class="desktop-app" style="--app-color:#ab707a"><i>✳</i><small>消息</small></span>
+            <span class="desktop-app" style="--app-color:#6f7985"><i>⚙</i><small>设置</small></span>
+            <span class="desktop-app" style="--app-color:#638a72"><i>◍</i><small>地图</small></span>
+            <span class="desktop-app" style="--app-color:#a97359"><i>▤</i><small>备忘录</small></span>
+            <span class="desktop-app" style="--app-color:#587b94"><i>✉</i><small>邮件</small></span>
+            <span class="desktop-app" style="--app-color:#9a727d"><i>◎</i><small>相机</small></span>
+          </div>
+          <div class="scene-top"><span id="scene-time">10:08</span><span class="scene-stroke" aria-hidden="true"></span></div>
+          <div class="card-wrap">
+            <div class="quota-card" id="card" aria-label="Sub2API 双账号套餐额度卡片">
+              <div class="card-top"><span class="card-brand" id="dual-title">Sub2API</span><span class="card-spacer"></span><span class="card-status" id="card-status">部分额度未知</span><button class="icon-button manual-refresh" type="button" title="手动刷新" aria-label="手动刷新">⟳</button></div>
+              <div class="account"><div class="account-copy"><span class="account-name" id="first-name">主账号 · 北区</span><span class="account-meta" id="first-meta">Claude Pro · 本周</span></div><div class="account-value" id="first-value"><strong>68%</strong><small>剩余</small></div></div>
+              <div class="account"><div class="account-copy"><span class="account-name" id="second-name">备用账号 · 东区</span><span class="account-meta" id="second-meta">Claude Pro · 本周</span></div><div class="account-value unknown" id="second-value"><strong>--</strong><small>额度未知</small></div></div>
+              <div class="card-bottom"><span id="abnormal-count">1 个异常</span><span id="last-check">刚刚检查</span></div>
+            </div>
+            <div class="quota-card single" id="single-card" aria-label="Sub2API 单账号套餐额度卡片" hidden>
+              <div class="card-top"><span class="card-brand" id="single-title">Sub2API</span><span class="card-spacer"></span><button class="icon-button manual-refresh" type="button" title="手动刷新" aria-label="手动刷新">⟳</button></div>
+              <div class="single-account"><strong id="single-name">主账号 · 北区</strong><small id="single-meta">Claude Pro · 本周</small></div>
+              <div class="single-metric"><div class="ring-graphic" id="ring-graphic" role="img" aria-label="本周剩余 68%">
+                <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle class="ring-track" cx="50" cy="50" r="40"></circle><circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="40" transform="rotate(-90 50 50)"></circle></svg>
+                <span class="ring-copy"><strong id="single-remaining">68%</strong><small id="single-metric-label">本周剩余</small></span>
+              </div></div>
+              <div class="single-bottom"><strong id="single-status">运行正常</strong><span id="single-time">刚刚检查</span></div>
+            </div>
+          </div>
+          <div class="scene-foot"><span>套餐额度</span><strong id="scene-caption">查看账号用量</strong></div>
+        </div>
+        <div class="preview-controls"><label>状态预览</label><div class="state-tabs" role="group" aria-label="预览卡片状态">
+          <button data-state="normal" aria-pressed="false">正常</button><button data-state="partial" aria-pressed="true" id="unknown-state">部分未知</button><button data-state="low" aria-pressed="false">低额度</button><button data-state="empty" aria-pressed="false">已用尽</button><button data-state="offline" aria-pressed="false">连接失败</button><button data-state="refreshing" aria-pressed="false">同步中</button>
+        </div></div>
+        <div class="progress-controls" id="progress-controls" hidden>
+          <div class="progress-heading"><label for="remaining-preview">剩余比例预览</label><output id="remaining-preview-value">68%</output></div>
+          <input id="remaining-preview" type="range" min="0" max="100" step="1" value="68">
+          <div class="progress-ends"><span>0% · 空环</span><span>100% · 满环</span></div>
+        </div>
+        <div class="activity"><span>本次交互</span><strong id="activity-text" aria-live="polite">等待操作</strong></div>
+      </aside>
+    </main>
+
+    <p class="prototype-note">平台约束：当前 SDK 将卡片配置中的更新周期按 30 分钟计，系统后台定期刷新不能保证每 1 分钟触发。“自动请求限频间隔”只限制网络请求，不会自行启动轮询；可配置的卡片周期仍需在鸿蒙真机上验证。“琉璃”在浏览器中模糊本页预览桌面。Apple 的 iOS 小组件材质也不采样桌面背后的内容；鸿蒙桌面卡片能否实现实时桌面模糊仍需真机验证，原生版本可能采用磨砂半透明近似。此文件是离线交互稿，不会访问服务或保存密钥。<a href="account-usage-trend-interaction.html">查看账号用量趋势卡交互稿</a></p>
+  </div>
+  <script>
+    const STORAGE_KEY = 'sub2api-monitor-design-v2';
+    const defaults = { period: 60, interval: 60, backoff: 15, theme: 'pine', transparency: 0, cardTitle: 'Sub2API',
+      wallpaper: 'light', layout: 'dual', dualAccounts: ['north', 'east'], singleAccount: 'north' };
+    const accounts = {
+      north: { name: '主账号 · 北区', meta: 'Claude Pro · 本周', remaining: 68 },
+      east: { name: '备用账号 · 东区', meta: 'Claude Pro · 本周', remaining: 52 },
+      south: { name: '团队账号 · 南区', meta: 'Claude Max · 本周', remaining: 46 }
+    };
+    const palettes = {
+      pine: { surface: '#f9fbfa', ink: '#24332f', muted: '#64746e', line: '#dce5e0', healthy: '#187b59', warning: '#a66d1d', error: '#b44842' },
+      graphite: { surface: '#252d32', ink: '#f4f5f2', muted: '#b5c5c2', line: '#52605f', healthy: '#7fd2ad', warning: '#f1b95e', error: '#ff8d83' },
+      mist: { surface: '#eaf3f7', ink: '#203b4c', muted: '#5e7682', line: '#cadde5', healthy: '#2879a4', warning: '#a87124', error: '#b94e56' },
+      coral: { surface: '#fff7f4', ink: '#392b31', muted: '#7f686d', line: '#eadbd9', healthy: '#277b66', warning: '#a66a24', error: '#ae5561' },
+      glass: { surface: '#f2fbf9', ink: '#173139', muted: '#395e63', line: '#9fb9b6', healthy: '#176f63', warning: '#895a19', error: '#a6383d' }
+    };
+    const glassDark = { surface: '#324a50', ink: '#f6fbfa', muted: '#d1e3df', line: '#91adb1', healthy: '#91e9c9', warning: '#ffca79', error: '#ff9c9b' };
+    const $ = id => document.getElementById(id);
+    function loadSaved() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        return { ...defaults, ...parsed };
+      } catch (_) { return { ...defaults }; }
+    }
+    let settings = loadSaved();
+    let previewState = 'partial';
+    let previewRemaining = accounts.north.remaining;
+    let refreshTimer = null;
+    let lastCheck = '刚刚检查';
+    function clampInterval(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.min(1440, Math.max(1, Math.round(n))) : 60;
+    }
+    function rgb(hex) {
+      return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(', ');
+    }
+    function colorChannels(hex) {
+      return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    }
+    function luminance(color) {
+      const linear = color.map(channel => {
+        const value = channel / 255;
+        return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+      });
+      return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+    }
+    function contrast(a, b) {
+      const first = luminance(a);
+      const second = luminance(b);
+      return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+    }
+    function readableColor(hex, background) {
+      const backgrounds = Array.isArray(background[0]) ? background : [background];
+      const original = colorChannels(hex);
+      if (backgrounds.every(surface => contrast(original, surface) >= 4.5)) return hex;
+      const dark = [0, 0, 0];
+      const light = [255, 255, 255];
+      const worstDark = Math.min(...backgrounds.map(surface => contrast(dark, surface)));
+      const worstLight = Math.min(...backgrounds.map(surface => contrast(light, surface)));
+      const target = worstDark > worstLight ? dark : light;
+      let low = 0;
+      let high = 1;
+      for (let i = 0; i < 12; i++) {
+        const amount = (low + high) / 2;
+        const mixed = original.map((channel, index) => channel * (1 - amount) + target[index] * amount);
+        if (backgrounds.every(surface => contrast(mixed, surface) >= 4.53)) high = amount;
+        else low = amount;
+      }
+      return `rgb(${original.map((channel, index) => Math.round(channel * (1 - high) + target[index] * high)).join(', ')})`;
+    }
+    function fillAccount(position, id, value, tone) {
+      const account = accounts[id];
+      $(`${position}-name`).textContent = account ? account.name : '第二个关注账号';
+      $(`${position}-meta`).textContent = account ? account.meta : '在设置页选择';
+      const valueElement = $(`${position}-value`);
+      valueElement.className = `account-value${tone ? ' ' + tone : ''}`;
+      valueElement.querySelector('strong').textContent = account && value !== null ? `${value}%` : '--';
+      valueElement.querySelector('small').textContent = account ? (value === null ? '额度未知' : '剩余') : '待选择';
+    }
+    function renderStatus() {
+      const firstId = settings.dualAccounts[0];
+      const secondId = settings.dualAccounts[1];
+      const secondValue = previewState === 'partial' ? null : previewState === 'low' ? 21 :
+        previewState === 'empty' ? 0 : accounts[secondId]?.remaining;
+      fillAccount('first', firstId, secondId ? accounts[firstId].remaining : previewState === 'partial' ? null : accounts[firstId].remaining,
+        !secondId && previewState === 'partial' ? 'unknown' : '');
+      fillAccount('second', secondId, secondValue ?? null, previewState === 'partial' ? 'unknown' :
+        previewState === 'low' ? 'low' : previewState === 'empty' ? 'empty' : '');
+      const dualLabels = {
+        normal: ['运行正常', '0 个异常', 'var(--card-healthy)'],
+        partial: ['部分额度未知', '1 个异常', 'var(--card-warning)'],
+        low: ['额度偏低', '1 个异常', 'var(--card-warning)'],
+        empty: ['额度用尽', '1 个异常', 'var(--card-error)'],
+        offline: ['连接失败', '上次成功数据', 'var(--card-error)'],
+        refreshing: ['同步中', '显示上次数据', 'var(--card-healthy)']
+      };
+      const dual = secondId ? dualLabels[previewState] : ['请选第二个账号', '待选择', 'var(--card-warning)'];
+      $('card-status').textContent = dual[0];
+      $('card-status').style.color = dual[2];
+      $('abnormal-count').textContent = dual[1];
+      $('last-check').textContent = previewState === 'offline' ? '08:42 更新' : lastCheck;
+
+      const selected = accounts[settings.singleAccount];
+      $('single-name').textContent = selected.name;
+      $('single-meta').textContent = selected.meta;
+      const single = {
+        normal: [`${previewRemaining}%`, '本周剩余', '运行正常', 'var(--card-healthy)'],
+        partial: ['--', '本周额度未知', '额度未知', 'var(--card-warning)'],
+        low: [`${previewRemaining}%`, '本周剩余', '额度偏低', 'var(--card-warning)'],
+        empty: ['0%', '本周剩余', '额度用尽', 'var(--card-error)'],
+        offline: [`${previewRemaining}%`, '上次成功额度', '连接失败', 'var(--card-error)'],
+        refreshing: [`${previewRemaining}%`, '上次成功额度', '同步中', 'var(--card-healthy)']
+      }[previewState];
+      $('single-remaining').textContent = single[0];
+      const ring = $('ring-graphic');
+      const unknown = previewState === 'partial';
+      const progress = unknown || previewState === 'empty' ? 0 : previewRemaining;
+      const ringColor = previewState === 'offline' || previewState === 'refreshing' || unknown ?
+        'var(--card-muted)' : single[3];
+      ring.dataset.unknown = String(unknown);
+      ring.style.setProperty('--ring-color', ringColor);
+      ring.setAttribute('aria-label', unknown ? '本周剩余额度未知' : `本周剩余 ${progress}%`);
+      $('ring-fill').style.strokeDashoffset = String(251.33 * (1 - progress / 100));
+      $('ring-fill').style.opacity = unknown || progress === 0 ? '0' : '1';
+      $('single-metric-label').textContent = single[1];
+      $('single-status').textContent = single[2];
+      $('single-status').style.color = single[3];
+      $('single-time').textContent = previewState === 'offline' ? '08:42 更新' : lastCheck;
+      $('unknown-state').textContent = settings.layout === 'single' ? '额度未知' : '部分未知';
+      document.querySelectorAll('[data-state]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.state === previewState)));
+    }
+    function render() {
+      settings.period = [30, 60, 120, 240].includes(Number(settings.period)) ? Number(settings.period) : 60;
+      settings.interval = clampInterval(settings.interval);
+      settings.backoff = [5, 15, 30, 60].includes(Number(settings.backoff)) ? Number(settings.backoff) : 15;
+      settings.transparency = Math.min(50, Math.max(0, Number(settings.transparency) || 0));
+      settings.theme = palettes[settings.theme] ? settings.theme : 'pine';
+      settings.cardTitle = typeof settings.cardTitle === 'string' ?
+        Array.from(settings.cardTitle.replace(/[\r\n]/g, '')).slice(0, 24).join('') : defaults.cardTitle;
+      settings.wallpaper = settings.wallpaper === 'dark' ? 'dark' : 'light';
+      settings.layout = settings.layout === 'single' ? 'single' : 'dual';
+      settings.dualAccounts = Array.isArray(settings.dualAccounts) ?
+        [...new Set(settings.dualAccounts.filter(id => accounts[id]))].slice(0, 2) : ['north', 'east'];
+      if (settings.dualAccounts.length === 0) settings.dualAccounts = ['north'];
+      settings.singleAccount = accounts[settings.singleAccount] ? settings.singleAccount : 'north';
+      const glass = settings.theme === 'glass';
+      const palette = glass && settings.wallpaper === 'dark' ? glassDark : palettes[settings.theme];
+      const opacity = glass ? .62 - settings.transparency * .0036 : 1 - settings.transparency / 100;
+      const wallpaper = settings.wallpaper === 'dark' ? [55, 77, 83] : [210, 224, 218];
+      const background = colorChannels(palette.surface).map((channel, index) =>
+        channel * opacity + wallpaper[index] * (1 - opacity));
+      const sceneColors = settings.wallpaper === 'dark' ?
+        ['#20363d', '#48636b', '#725c64', '#467d96', '#bd695f'] :
+        ['#d8e5df', '#a9c5c8', '#dfc5ba', '#467d96', '#bd695f'];
+      const readableSurfaces = glass ? sceneColors.map(color => colorChannels(palette.surface).map((channel, index) =>
+        channel * opacity + colorChannels(color)[index] * (1 - opacity))) : background;
+      for (const card of [$('card'), $('single-card')]) {
+        card.classList.toggle('glass', glass);
+        card.style.setProperty('--surface-alpha', `rgba(${rgb(palette.surface)}, ${opacity})`);
+        card.style.setProperty('--card-line', palette.line);
+        for (const key of ['ink', 'muted', 'healthy', 'warning', 'error']) {
+          card.style.setProperty(`--card-${key}`, readableColor(palette[key], readableSurfaces));
+        }
+      }
+      $('card').hidden = settings.layout === 'single';
+      $('single-card').hidden = settings.layout !== 'single';
+      const displayTitle = settings.cardTitle.trim() || defaults.cardTitle;
+      for (const title of [$('dual-title'), $('single-title')]) {
+        title.textContent = displayTitle;
+        title.title = displayTitle;
+      }
+      if ($('card-title').value !== settings.cardTitle) $('card-title').value = settings.cardTitle;
+      $('title-count').textContent = `${Array.from(settings.cardTitle).length}/24`;
+      $('progress-controls').hidden = settings.layout !== 'single';
+      $('preview-size').textContent = settings.layout === 'single' ? '2×2 · 单账号' : '2×4 · 双账号';
+      $('remaining-preview').value = previewRemaining;
+      $('remaining-preview').disabled = previewState === 'partial';
+      $('remaining-preview-value').textContent = previewState === 'partial' ? '未知' : `${previewRemaining}%`;
+      $('period-value').textContent = settings.period < 60 ? '30 分钟' : `${settings.period / 60} 小时`;
+      $('interval-value').textContent = `${settings.interval} 分钟`;
+      $('request-interval').value = settings.interval;
+      $('interval-minus').disabled = settings.interval <= 1;
+      $('interval-plus').disabled = settings.interval >= 1440;
+      $('backoff').value = settings.backoff;
+      $('transparency').value = settings.transparency;
+      $('transparency-value').textContent = `${settings.transparency}%`;
+      $('transparency-label').textContent = glass ? '额外背景透明度' : '卡片背景透明度';
+      $('transparency-start').textContent = glass ? '雾面' : '不透明';
+      $('transparency-end').textContent = glass ? '更通透' : '50%';
+      $('transparency-hint').textContent = glass ?
+        '毛玻璃自带适度透光；文字、额度和状态标识保持不透明。' :
+        '只调整背景，文字、额度和状态标识保持不透明。';
+      $('scene').dataset.wallpaper = settings.wallpaper;
+      document.querySelectorAll('[data-period]').forEach(button => button.dataset.active = String(Number(button.dataset.period) === settings.period));
+      document.querySelectorAll('[data-theme]').forEach(button => button.dataset.active = String(button.dataset.theme === settings.theme));
+      document.querySelectorAll('[data-wallpaper]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.wallpaper === settings.wallpaper)));
+      document.querySelectorAll('[data-layout]').forEach(button => button.dataset.active = String(button.dataset.layout === settings.layout));
+      $('account-count').textContent = settings.layout === 'single' ? '已选 1 个' : `已选 ${settings.dualAccounts.length} 个`;
+      $('account-hint').textContent = settings.layout === 'single' ? '选择 1 个账号作为方形卡片的关注对象。' :
+        '双账号卡片最多选择 2 个；取消一个后可选其他账号。';
+      document.querySelectorAll('[data-account]').forEach(button => {
+        const active = settings.layout === 'single' ? button.dataset.account === settings.singleAccount :
+          settings.dualAccounts.includes(button.dataset.account);
+        button.dataset.active = String(active);
+        button.setAttribute('aria-pressed', String(active));
+        button.disabled = settings.layout === 'dual' && (active && settings.dualAccounts.length === 1 ||
+          !active && settings.dualAccounts.length === 2);
+      });
+      renderStatus();
+    }
+    function setPane(pane) {
+      document.querySelectorAll('.tab').forEach(button => button.setAttribute('aria-selected', String(button.dataset.pane === pane)));
+      document.querySelectorAll('.pane').forEach(panel => panel.hidden = panel.id !== `pane-${pane}`);
+      $('save-message').textContent = '';
+    }
+    function updateSetting(change) {
+      change();
+      $('save-message').textContent = '';
+      render();
+    }
+    document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => setPane(button.dataset.pane)));
+    document.querySelectorAll('[data-period]').forEach(button => button.addEventListener('click', () => updateSetting(() => { settings.period = Number(button.dataset.period); })));
+    $('card-title').addEventListener('input', event => updateSetting(() => { settings.cardTitle = event.target.value; }));
+    document.querySelectorAll('[data-theme]').forEach(button => button.addEventListener('click', () => updateSetting(() => { settings.theme = button.dataset.theme; })));
+    document.querySelectorAll('[data-wallpaper]').forEach(button => button.addEventListener('click', () => updateSetting(() => { settings.wallpaper = button.dataset.wallpaper; })));
+    document.querySelectorAll('[data-layout]').forEach(button => button.addEventListener('click', () => updateSetting(() => {
+      settings.layout = button.dataset.layout;
+      previewState = settings.layout === 'single' ? 'normal' : 'partial';
+      previewRemaining = accounts[settings.singleAccount].remaining;
+    })));
+    document.querySelectorAll('[data-account]').forEach(button => button.addEventListener('click', () => updateSetting(() => {
+      const id = button.dataset.account;
+      if (settings.layout === 'single') {
+        settings.singleAccount = id;
+        previewRemaining = accounts[id].remaining;
+      }
+      else if (settings.dualAccounts.includes(id) && settings.dualAccounts.length > 1) {
+        settings.dualAccounts = settings.dualAccounts.filter(selected => selected !== id);
+      } else if (!settings.dualAccounts.includes(id) && settings.dualAccounts.length < 2) {
+        settings.dualAccounts = [...settings.dualAccounts, id];
+      }
+      previewState = 'normal';
+    })));
+    document.querySelectorAll('[data-state]').forEach(button => button.addEventListener('click', () => {
+      if (refreshTimer) return;
+      previewState = button.dataset.state;
+      if (previewState === 'normal') previewRemaining = accounts[settings.singleAccount].remaining;
+      if (previewState === 'low') previewRemaining = 21;
+      if (previewState === 'empty') previewRemaining = 0;
+      render();
+    }));
+    $('remaining-preview').addEventListener('input', event => {
+      previewRemaining = Math.min(100, Math.max(0, Number(event.target.value) || 0));
+      previewState = previewRemaining === 0 ? 'empty' : previewRemaining <= 25 ? 'low' : 'normal';
+      render();
+    });
+    $('interval-minus').addEventListener('click', () => updateSetting(() => { settings.interval = clampInterval(settings.interval - 1); }));
+    $('interval-plus').addEventListener('click', () => updateSetting(() => { settings.interval = clampInterval(settings.interval + 1); }));
+    $('request-interval').addEventListener('change', event => updateSetting(() => { settings.interval = clampInterval(event.target.value); }));
+    $('backoff').addEventListener('change', event => updateSetting(() => { settings.backoff = Number(event.target.value); }));
+    $('transparency').addEventListener('input', event => updateSetting(() => { settings.transparency = Number(event.target.value); }));
+    function simulateManualRefresh() {
+      if (refreshTimer) { $('activity-text').textContent = '请求进行中，已合并'; return; }
+      const previousState = previewState;
+      previewState = 'refreshing';
+      document.querySelectorAll('.manual-refresh').forEach(button => button.setAttribute('aria-busy', 'true'));
+      $('activity-text').textContent = '正在模拟手动刷新';
+      render();
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        previewState = previousState === 'refreshing' ? 'normal' : previousState;
+        const time = new Date();
+        lastCheck = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')} 更新`;
+        document.querySelectorAll('.manual-refresh').forEach(button => button.setAttribute('aria-busy', 'false'));
+        $('activity-text').textContent = '手动刷新完成 · 无冷却';
+        render();
+      }, 850);
+    }
+    document.querySelectorAll('.manual-refresh').forEach(button => button.addEventListener('click', simulateManualRefresh));
+    $('save').addEventListener('click', () => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); $('save-message').textContent = '已保存到此浏览器'; }
+      catch (_) { $('save-message').textContent = '浏览器禁止本地保存'; }
+    });
+    $('reset').addEventListener('click', () => {
+      settings = { ...defaults };
+      previewState = 'partial';
+      previewRemaining = accounts.north.remaining;
+      lastCheck = '刚刚检查';
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      $('save-message').textContent = '已恢复默认';
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

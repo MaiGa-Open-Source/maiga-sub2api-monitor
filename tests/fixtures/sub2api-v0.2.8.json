@@ -1,0 +1,90 @@
+{
+  "page1": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "items": [
+        {
+          "id": 101,
+          "name": "Primary Codex",
+          "platform": "openai",
+          "type": "oauth",
+          "status": "active",
+          "schedulable": true
+        },
+        {
+          "id": 102,
+          "name": "Daily API Key",
+          "platform": "anthropic",
+          "type": "apikey",
+          "status": "active",
+          "schedulable": true,
+          "quota_daily_limit": 20,
+          "quota_daily_used": 18
+        }
+      ],
+      "total": 3,
+      "page": 1,
+      "page_size": 2,
+      "pages": 2
+    }
+  },
+  "page2": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "items": [
+        {
+          "id": 103,
+          "name": "Inactive account",
+          "platform": "openai",
+          "type": "oauth",
+          "status": "inactive",
+          "schedulable": false
+        }
+      ],
+      "total": 3,
+      "page": 2,
+      "page_size": 2,
+      "pages": 2
+    }
+  },
+  "usage": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "seven_day": { "utilization": 92, "resets_at": "2099-01-01T00:00:00Z" },
+      "five_hour": { "utilization": 30, "resets_at": "2099-01-01T00:00:00Z" }
+    }
+  },
+  "geminiUsage": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "gemini_shared_daily": { "utilization": 87, "resets_at": "2099-01-01T00:00:00Z" }
+    }
+  },
+  "antigravityUsage": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "antigravity_quota": {
+        "gemini-3-flash": { "utilization": 40, "reset_time": "2099-01-01T00:00:00Z" },
+        "claude-sonnet-4-5": { "utilization": 91, "reset_time": "2099-01-01T00:00:00Z" }
+      }
+    }
+  },
+  "grokUsage": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "grok_billing": {
+        "period_type": "weekly",
+        "usage_percent": 95,
+        "period_end": "2099-01-01T00:00:00Z",
+        "used_percent": 30,
+        "billing_period_end": "2099-01-01T00:00:00Z"
+      }
+    }
+  }
+}

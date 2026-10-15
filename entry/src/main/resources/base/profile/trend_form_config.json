@@ -1,0 +1,22 @@
+{
+  "forms": [
+    {
+      "name": "trend_form",
+      "displayName": "$string:trend_form_display_name",
+      "description": "$string:trend_form_desc",
+      "src": "./ets/trendcard/pages/TrendCard.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDynamic": true,
+      "isDefault": false,
+      "updateEnabled": true,
+      "updateDuration": 1,
+      "defaultDimension": "4*4",
+      "supportDimensions": ["2*4", "4*4"]
+    }
+  ]
+}

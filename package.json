@@ -1,0 +1,21 @@
+{
+  "name": "maiga-sub2api-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "ohos": {
+    "org": "huawei",
+    "buildTool": "hvigor",
+    "directoryLevel": "project"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test:contract": "node --test tests/*.test.cjs"
+  },
+  "dependencies": {
+    "@ohos/hvigor": "6.22.9",
+    "@ohos/hvigor-ohos-plugin": "6.22.9"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

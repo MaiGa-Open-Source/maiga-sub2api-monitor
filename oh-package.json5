@@ -1,0 +1,8 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "maiga-sub2api-monitor",
+  "version": "0.1.0",
+  "description": "HarmonyOS atomic service for Sub2API upstream quota monitoring",
+  "dependencies": {},
+  "devDependencies": {}
+}
