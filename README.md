@@ -12,6 +12,39 @@ Sub2API Monitor 是一款 HarmonyOS 原生手机应用，用于查看自己部�
 
 当前按 Sub2API `v0.2.8` 的管理端接口实现，读取账号列表、选中账号的额度信息和账号日统计。需要能访问这些接口的 Admin Key。
 
+## 效果预览
+
+5 种视觉结构，每种提供 3 套配色，统一适配额度卡 2×2、额度卡 2×4、趋势卡 2×4 和趋势卡 4×4。以下图片来自浏览器视觉交互稿，使用虚构示例数据；原生卡片的字体、留白与材质以 HarmonyOS 真机效果为准。
+
+![五种视觉结构对比：晨雾渐层、软垫模块、酒标徽章、口袋液晶、轻铝面板](design/previews/styles-overview.png)
+
+点击风格名称可查看该风格第一套配色的四类卡片完整预览。
+
+| 视觉结构 | 配色一 | 配色二 | 配色三 |
+| --- | --- | --- | --- |
+| [晨雾渐层](design/previews/aurora.png) | 蓝紫晨霞 | 青杏薄雾 | 粉桃云层 |
+| [软垫模块](design/previews/cushion.png) | 香芋牛奶 | 开心果乳酪 | 桃子酸奶 |
+| [酒标徽章](design/previews/label.png) | 酒红奶油 | 橄榄藏品 | 海盐蓝章 |
+| [口袋液晶](design/previews/pixel.png) | 苔绿液晶 | 灰蓝电子纸 | 蜜茶屏幕 |
+| [轻铝面板](design/previews/chrome.png) | 月光银 | 香槟铝 | 玫瑰钛 |
+
+<details>
+<summary>展开查看四类卡片完整预览（晨雾渐层）</summary>
+
+![晨雾渐层：单账号额度卡、双账号额度卡、中号趋势卡及大号趋势卡](design/previews/aurora.png)
+
+</details>
+
+### 本地交互预览
+
+下载源码后，在仓库根目录执行：
+
+```sh
+python -m http.server 8765 --bind 127.0.0.1 --directory design
+```
+
+打开 [本地交互稿](http://127.0.0.1:8765/visual-style-exploration.html)，可切换全部 15 种搭配、深浅桌面背景、额度状态，以及趋势卡的 7/30 天、请求/费用和选中日期。交互稿无需配置服务地址或 Admin Key。
+
 ## 开发运行
 
 1. 安装 DevEco Studio 6.0.2 和 HarmonyOS SDK API 22；项目要求 API 22 及以上的 HarmonyOS 手机。
