@@ -20,6 +20,7 @@
     .app-title small { display: block; margin-top: 3px; color: #6c7b78; font-size: 11px; }
     .app-header a { color: #286e66; font-size: 12px; white-space: nowrap; text-decoration: none; }
     .app-header a:hover { text-decoration: underline; }
+    .prototype-links { display: flex; flex-wrap: wrap; justify-content: end; gap: 8px 16px; }
     .workspace { display: grid; grid-template-columns: minmax(255px, 305px) minmax(0, 1fr); gap: 35px; padding-top: 26px; }
     .controls h1 { margin: 0; font-size: 24px; line-height: 1.35; }
     .controls .intro { margin: 8px 0 23px; color: #697a76; font-size: 13px; line-height: 1.55; }
@@ -112,7 +113,7 @@
   <div class="app">
     <header class="app-header">
       <div class="app-title"><span class="app-logo">S2</span><div><strong>账号用量趋势</strong><small>D02 · 桌面卡片交互稿</small></div></div>
-      <a href="sub2api-monitor-interaction.html">查看现有额度卡</a>
+      <nav class="prototype-links" aria-label="交互稿导航"><a href="sub2api-monitor-interaction.html">查看现有额度卡</a><a href="visual-style-exploration.html">第二轮：结构 × 配色 ↗</a></nav>
     </header>
     <main class="workspace">
       <section class="controls" aria-label="原型控制">

@@ -1,7 +1,9 @@
+import { QuotaWidget } from '../components/QuotaWidget';
+import { TrendWidget } from '../components/TrendWidget';
 import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
-import { AccountPreview, QuotaSnapshot } from '../model/MockQuota';
-import { CardAppearance, CardPreferences, CardTheme, cardPalette,
+import { AccountPreview, QuotaSnapshot, MockFormData } from '../model/MockQuota';
+import { CardAppearance, CardPreferences, CardTheme, CARD_STYLES, CardStyle, cardStyle, cardPalette,
   normalizeCardPreferences } from '../model/CardPreferences';
 import { loadCardPreferences, saveCardPreferences } from '../storage/CardPreferencesStore';
 import { loadFeaturedIds, loadSingleId, loadSnapshot, saveFeaturedIds,
@@ -28,7 +30,8 @@ struct CardSettings {
   @State private query: string = '';
   @State private trend: TrendSnapshot = emptyTrend();
   @State private title: string = 'Sub2API';
-  @State private theme: CardTheme = 'pine';
+  @State private theme: CardTheme = 'aurora';
+  @State private paletteIndex: number = 0;
   @State private appearance: CardAppearance = 'system';
   @State private transparency: number = 0;
   @State private previewDark: boolean = false;
@@ -51,6 +54,7 @@ struct CardSettings {
     const settings = loadCardPreferences(context);
     this.title = settings.title;
     this.theme = settings.theme;
+    this.paletteIndex = settings.paletteIndex;
     this.appearance = settings.appearance;
     this.transparency = settings.transparency;
     this.previewDark = settings.appearance === 'dark' || (settings.appearance === 'system' &&
@@ -73,7 +77,7 @@ struct CardSettings {
   }
 
   private previewPreferences(): CardPreferences {
-    return normalizeCardPreferences({ title: this.title, theme: this.theme,
+    return normalizeCardPreferences({ title: this.title, theme: this.theme, paletteIndex: this.paletteIndex,
       appearance: this.appearance, transparency: this.transparency,
       cardPeriodMinutes: this.cardPeriodMinutes,
       autoIntervalMinutes: Number(this.autoIntervalText) || 60,
@@ -135,40 +139,6 @@ struct CardSettings {
     }
   }
 
-  private paletteColor(role: string): string {
-    const palette = cardPalette(this.theme, this.transparency, this.previewDark);
-    if (role === 'surface') return palette.surface;
-    if (role === 'surfaceEnd') return palette.surfaceEnd;
-    if (role === 'edge') return palette.edge;
-    if (role === 'shadow') return palette.shadow;
-    if (role === 'ink') return palette.ink;
-    if (role === 'muted') return palette.muted;
-    if (role === 'line') return palette.line;
-    if (role === 'warning') return palette.warning;
-    if (role === 'error') return palette.error;
-    return palette.healthy;
-  }
-
-  private previewAccount(): AccountPreview | undefined {
-    const id = this.previewMode === 'single' ? this.singleId : this.featuredIds[0];
-    return this.snapshot.accounts.find((account: AccountPreview) => account.id === id);
-  }
-
-  private accountTone(account: AccountPreview | undefined): string {
-    return !account || account.health === 'unknown' || account.health === 'low' ?
-      this.paletteColor('warning') : account.health === 'unavailable' ?
-        this.paletteColor('error') : this.paletteColor('healthy');
-  }
-
-  private ringValue(account: AccountPreview | undefined): number {
-    const match = account ? /^(100|[1-9]?\d)%$/.exec(account.remaining) : undefined;
-    return match ? Number(match[1]) : 0;
-  }
-
-  private ringKnown(account: AccountPreview | undefined): boolean {
-    return account !== undefined && /^(100|[1-9]?\d)%$/.test(account.remaining);
-  }
-
   private toggleFeatured(id: number): void {
     if (this.featuredIds.includes(id)) {
       this.featuredIds = this.featuredIds.filter((value: number) => value !== id);
@@ -197,7 +167,7 @@ struct CardSettings {
     try {
       const context = getContext(this) as common.UIAbilityContext;
       await saveCardPreferences(context, normalizeCardPreferences({
-        title: this.title, theme: this.theme, appearance: this.appearance,
+        title: this.title, theme: this.theme, paletteIndex: this.paletteIndex, appearance: this.appearance,
         transparency: this.transparency,
         cardPeriodMinutes: this.cardPeriodMinutes, autoIntervalMinutes: rawInterval,
         failureBackoffMinutes: this.failureBackoffMinutes
@@ -272,18 +242,51 @@ struct CardSettings {
   }
 
   @Builder
-  private themeOption(name: CardTheme, label: string) {
-    Button(label)
-      .fontSize(13)
-      .fontColor(cardPalette(name, 0, this.previewDark).ink)
-      .backgroundColor(name === 'glass' ?
-        (this.previewDark ? '#324A50' : '#D8E7E4') : cardPalette(name, 0).surface)
-      .border({ width: this.theme === name ? 2 : 1,
-        color: this.theme === name ? $r('app.color.quota_healthy') : $r('app.color.quota_line') })
-      .borderRadius(6)
-      .layoutWeight(1)
-      .height(42)
-      .onClick(() => { this.theme = name; })
+  private themeOption(style: CardStyle) {
+    Button() {
+      Row({ space: 11 }) {
+        Text(style.id === 'pixel' ? '68' : style.id === 'label' ? 'S²' : 'Aa')
+          .fontSize(24).fontFamily(style.fontFamily).fontWeight(FontWeight.Bold)
+          .fontColor(cardPalette(style.id, 0, false, this.paletteIndex).healthy)
+          .width(45).height(43).textAlign(TextAlign.Center)
+          .backgroundColor(cardPalette(style.id, 0, false, this.paletteIndex).surface)
+          .borderRadius(style.radius / 2)
+        Column({ space: 4 }) {
+          Text(style.name).fontSize(14).fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.quota_ink'))
+          Text(style.brief).fontSize(11).fontColor($r('app.color.quota_muted'))
+        }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+        Text(this.theme === style.id ? '✓' : '').fontSize(17).fontColor($r('app.color.quota_healthy'))
+      }.width('100%')
+    }
+    .type(ButtonType.Normal).width('100%').height(65).padding({ left: 11, right: 11 })
+    .backgroundColor($r('app.color.quota_surface'))
+    .border({ width: this.theme === style.id ? 2 : 1,
+      color: this.theme === style.id ? $r('app.color.quota_healthy') : $r('app.color.quota_line') })
+    .borderRadius(12).onClick(() => { this.theme = style.id; })
+  }
+
+  @Builder
+  private paletteOption(index: number) {
+    Button() {
+      Column({ space: 6 }) {
+        Row() {
+          Row().layoutWeight(1).height(22)
+            .backgroundColor(cardStyle(this.theme).palettes[index].surface)
+          Row().layoutWeight(1).height(22)
+            .backgroundColor(cardStyle(this.theme).palettes[index].accent)
+          Row().layoutWeight(1).height(22)
+            .backgroundColor(cardStyle(this.theme).palettes[index].accent2)
+        }.width('100%').borderRadius(4).clip(true)
+        Text(cardStyle(this.theme).palettes[index].name).fontSize(11)
+          .fontColor($r('app.color.quota_ink')).maxLines(1)
+      }.width('100%')
+    }
+    .type(ButtonType.Normal).height(65).layoutWeight(1).padding(7)
+    .backgroundColor($r('app.color.quota_surface'))
+    .border({ width: this.paletteIndex === index ? 2 : 1,
+      color: this.paletteIndex === index ? $r('app.color.quota_healthy') : $r('app.color.quota_line') })
+    .borderRadius(9).onClick(() => { this.paletteIndex = index; })
   }
 
   @Builder
@@ -321,224 +324,31 @@ struct CardSettings {
     .width('100%').height('100%').padding(9)
   }
 
-  @Builder
-  private preview() {
-    Column({ space: 7 }) {
-      Row() {
-        Text(this.title.trim() || 'Sub2API')
-          .fontSize(15).fontWeight(FontWeight.Bold).fontColor(this.paletteColor('ink'))
-          .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis }).layoutWeight(1)
-        Text(this.snapshot.statusLabel)
-          .fontSize(10).fontColor(this.paletteColor('warning')).maxLines(1)
-      }
-      .width('100%')
-      if (this.previewMode === 'single') {
-        Text(this.previewAccount()?.name || '选择单账号')
-          .fontSize(12).fontColor(this.paletteColor('ink')).width('100%').maxLines(1)
-        Stack({ alignContent: Alignment.Center }) {
-          if (this.ringKnown(this.previewAccount())) {
-            Progress({ value: this.ringValue(this.previewAccount()), total: 100, type: ProgressType.Ring })
-              .color(this.accountTone(this.previewAccount()))
-              .backgroundColor(this.paletteColor('line'))
-              .style({ strokeWidth: 8 }).width(82).height(82)
-          } else {
-            Column().width(82).height(82)
-              .border({ width: 8, color: this.paletteColor('line'), style: BorderStyle.Dashed })
-              .borderRadius(41)
-          }
-          Column({ space: 2 }) {
-            Text(this.previewAccount()?.remaining || '--')
-              .fontSize(23).fontWeight(FontWeight.Bold)
-              .fontColor(this.accountTone(this.previewAccount()))
-            Text(this.ringKnown(this.previewAccount()) ? '剩余额度' : '额度未知')
-              .fontSize(9).fontColor(this.paletteColor('muted'))
-          }
-        }
-        .width('100%').height(88)
-        Text(this.previewAccount()?.stateLabel || '待选择')
-          .fontSize(10).fontColor(this.accountTone(this.previewAccount()))
-          .width('100%')
-      } else {
-        ForEach(this.featuredIds, (id: number) => {
-          Row() {
-            Text(this.snapshot.accounts.find((item: AccountPreview) => item.id === id)?.name || '账号待同步')
-              .fontSize(12).fontColor(this.paletteColor('ink')).layoutWeight(1).maxLines(1)
-            Text(this.snapshot.accounts.find((item: AccountPreview) => item.id === id)?.remaining || '--')
-              .fontSize(17).fontWeight(FontWeight.Bold).fontColor(this.paletteColor('healthy'))
-          }
-          .width('100%').height(43)
-          .border({ width: { bottom: 1 }, color: this.paletteColor('line') })
-        }, (id: number) => `${id}`)
-        if (this.featuredIds.length < 2) {
-          Text('选择双账号卡片关注的账号')
-            .fontSize(12).fontColor(this.paletteColor('muted'))
-            .height(43).width('100%')
-        }
-        Text(this.snapshot.lastSuccessAt ? `上次成功 ${this.snapshot.lastSuccessAt}` : '尚无成功数据')
-          .fontSize(10).fontColor(this.paletteColor('muted')).width('100%')
-      }
-    }
-    .padding(13)
-    .width(this.previewMode === 'single' ? 184 : '100%')
-    .height(this.previewMode === 'single' ? 184 : 184)
-    .backgroundColor(this.paletteColor('surface'))
-    .linearGradient({ angle: 135, colors: [[this.paletteColor('surface'), 0],
-      [this.paletteColor('surfaceEnd'), 1]] })
-    .border({ width: this.theme === 'glass' ? 1 : 0, color: this.paletteColor('edge') })
-    .shadow({ radius: this.theme === 'glass' ? 16 : 0, color: this.paletteColor('shadow') })
-    .borderRadius(8)
+  private quotaPreviewData(): MockFormData {
+    return new MockFormData(this.snapshot, this.previewMode === 'single' ? [this.singleId] : this.featuredIds,
+      this.previewMode === 'single' ? 2 : 3, this.previewPreferences(), this.previewDark);
   }
 
   @Builder
-  private trendMetricButton(label: string, metric: TrendMetric) {
-    Column({ space: this.trendDimension === 4 ? 2 : 0 }) {
-      Text(label).fontSize(this.trendDimension === 4 ? 10 : 8)
-        .fontColor(this.trendPreviewData().mutedColor)
-      Text(metric === 'cost' ? this.trendPreviewData().totalCost :
-        this.trendPreviewData().totalRequests)
-        .fontSize(this.trendDimension === 4 ? 22 : 15).fontWeight(FontWeight.Bold)
-        .fontColor(this.trendMetric === metric ? this.trendPreviewData().inkColor :
-          this.trendPreviewData().mutedColor)
-        .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-    }
-    .alignItems(HorizontalAlign.Start).layoutWeight(1)
-    .height(this.trendDimension === 4 ? 59 : 26)
-    .padding({ left: metric === 'cost' ? 12 : 0 })
-    .border({ width: { bottom: this.trendMetric === metric ? 2 : 0,
-      left: metric === 'cost' ? 1 : 0 }, color: this.trendMetric === metric ?
-        (metric === 'cost' ? this.trendPreviewData().costColor :
-          this.trendPreviewData().requestColor) :
-        this.trendPreviewData().lineColor })
-    .onClick(() => { this.trendMetric = metric; })
+  private preview() {
+    QuotaWidget({ data: this.quotaPreviewData() })
+      .width(this.previewMode === 'single' ? 164 : '100%').height(164)
+  }
+
+  private previewTrendCommand(value: string): void {
+    if (value === 'refresh') this.refreshTrendData();
+    else if (value === 'period-7' || value === 'period-30') {
+      this.trendDays = value === 'period-30' ? 30 : 7;
+      this.trendIndex = -1;
+    } else if (value === 'metric-requests' || value === 'metric-cost') {
+      this.trendMetric = value === 'metric-cost' ? 'cost' : 'requests';
+    } else if (value.startsWith('day-')) this.trendIndex = Number(value.slice(4));
   }
 
   @Builder
   private trendPreview() {
-    Column({ space: 0 }) {
-      Row({ space: 7 }) {
-        Text('S2').fontSize(9).fontWeight(FontWeight.Bold)
-          .fontColor(this.trendPreviewData().surfaceColor).textAlign(TextAlign.Center)
-          .width(26).height(26).backgroundColor(this.trendPreviewData().requestColor).borderRadius(5)
-        Column({ space: 1 }) {
-          Text('用量趋势').fontSize(this.trendDimension === 4 ? 14 : 12).fontWeight(FontWeight.Bold)
-            .fontColor(this.trendPreviewData().inkColor)
-          Text(this.trendName()).fontSize(9).fontColor(this.trendPreviewData().mutedColor)
-            .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-        }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-        Text('↻').fontSize(20).fontColor(this.trendPreviewData().inkColor)
-          .onClick(() => this.refreshTrendData())
-      }.width('100%').height(this.trendDimension === 4 ? 32 : 27)
-      Row({ space: 3 }) {
-        ForEach([7, 30], (days: number) => {
-          Text(days === 7 ? '近 7 天' : '近 30 天')
-            .fontSize(10).fontColor(this.trendDays === days ? this.trendPreviewData().inkColor :
-              this.trendPreviewData().mutedColor)
-            .backgroundColor(this.trendDays === days ? this.trendPreviewData().chipColor : Color.Transparent)
-            .borderRadius(4).padding({ left: 5, right: 5, top: 4, bottom: 4 })
-            .onClick(() => { this.trendDays = days; this.trendIndex = -1; })
-        }, (days: number) => `${days}`)
-        Blank()
-        Text(this.trendPreviewData().statusLabel).fontSize(9)
-          .fontColor(this.trendPreviewData().mutedColor)
-          .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-      }.width('100%').height(this.trendDimension === 4 ? 31 : 22)
-      Row() {
-        this.trendMetricButton('请求总数', 'requests')
-        this.trendMetricButton('账号费用', 'cost')
-      }.width('100%')
-      if (this.trendPreviewData().hasChart === 'true') {
-        Row({ space: 3 }) {
-           if (this.trendDimension === 4) {
-             Column() {
-            Text(this.trendPreviewData().axisTop).fontSize(8)
-              .fontColor(this.trendPreviewData().mutedColor)
-            Blank()
-            Text(this.trendPreviewData().axisMid).fontSize(8)
-              .fontColor(this.trendPreviewData().mutedColor)
-            Blank()
-            Text('0').fontSize(8).fontColor(this.trendPreviewData().mutedColor)
-             }.width(28).height('100%').alignItems(HorizontalAlign.End)
-           }
-          Stack() {
-            Column() {
-              Row().width('100%').height(1).backgroundColor(this.trendPreviewData().lineColor)
-              Blank()
-              Row().width('100%').height(1).backgroundColor(this.trendPreviewData().lineColor)
-              Blank()
-              Row().width('100%').height(1).backgroundColor(this.trendPreviewData().lineColor)
-            }.width('100%').height('100%')
-            Shape() {
-              if (this.trendDays === 30) {
-                 Path({ width: '300px', height: '100px', commands: this.trendPreviewData().chartArea })
-                  .fill(this.trendMetric === 'cost' ? this.trendPreviewData().costColor :
-                    this.trendPreviewData().requestColor).stroke(Color.Transparent).opacity(0.13)
-                 Path({ width: '300px', height: '100px', commands: this.trendPreviewData().chartLine })
-                  .fill(Color.Transparent).stroke(this.trendMetric === 'cost' ?
-                    this.trendPreviewData().costColor : this.trendPreviewData().requestColor).strokeWidth(2)
-                Path({ width: '300px', height: '100px', commands: this.trendPreviewData().chartHighlight })
-                  .fill(this.trendPreviewData().surfaceColor)
-                  .stroke(this.trendMetric === 'cost' ? this.trendPreviewData().costColor :
-                    this.trendPreviewData().requestColor).strokeWidth(2.5)
-              }
-            }.viewPort({ x: 0, y: 0, width: '300px', height: '100px' })
-              .width('100%').height('100%')
-            if (this.trendDays === 7) {
-              Row({ space: 2 }) {
-                ForEach(this.trendPreviewData().barHeights, (height: number, index: number) => {
-                  Column() {
-                    Blank()
-                    if (height > 0) {
-                      Column().width(this.trendDimension === 4 ? 16 : 12)
-                        .height(`${Math.max(2, Math.round(height * 0.84))}%`)
-                        .backgroundColor(this.trendMetric === 'cost' ?
-                          this.trendPreviewData().costColor : this.trendPreviewData().requestColor)
-                        .opacity(index === this.trendPreviewData().selectedDayIndex ? 1 : 0.72)
-                        .borderRadius(2)
-                    }
-                  }.layoutWeight(1).height('100%')
-                }, (_height: number, index: number) => `${index}`)
-              }.width('100%').height('100%').padding({ top: 3, bottom: 2 })
-            }
-            Row() {
-              ForEach(Array.from({ length: this.trendPreviewData().dayCount },
-                (_value: number, index: number) => index), (index: number) => {
-                Blank().layoutWeight(1).height('100%').onClick(() => { this.trendIndex = index; })
-              }, (index: number) => `${index}`)
-            }.width('100%').height('100%')
-          }.layoutWeight(1).height('100%')
-         }.width('100%').height(this.trendDimension === 4 ? 102 : 33)
-         if (this.trendDimension === 4) {
-           Row() {
-             Blank().width(31)
-             ForEach(this.trendPreviewData().dateLabels, (label: string) => {
-               Text(label).fontSize(8).fontColor(this.trendPreviewData().mutedColor)
-                 .textAlign(TextAlign.Center).layoutWeight(1).maxLines(1)
-             }, (label: string) => label)
-           }.width('100%').height(17)
-         }
-      } else {
-        Text(this.trendPreviewData().emptyLabel).fontSize(12)
-          .fontColor(this.trendPreviewData().mutedColor)
-          .textAlign(TextAlign.Center).width('100%').layoutWeight(1)
-      }
-      Row() {
-        Text(this.trendPreviewData().dayLabel + ' · ' + this.trendPreviewData().dayValue)
-          .fontSize(10).fontColor(this.trendPreviewData().inkColor)
-          .layoutWeight(1).maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-        Text(this.trendPreviewData().chartCaption).fontSize(9)
-          .fontColor(this.trendPreviewData().mutedColor)
-       }.width('100%').height(this.trendDimension === 4 ? 23 : 12)
-        .border({ width: { top: 1 }, color: this.trendPreviewData().lineColor })
-    }
-    .width(this.trendDimension === 4 ? 290 : '100%')
-     .height(this.trendDimension === 4 ? 290 : 132)
-     .padding(this.trendDimension === 4 ? 13 : 4)
-    .backgroundColor(this.trendPreviewData().surfaceColor)
-    .linearGradient({ angle: 135, colors: [[this.trendPreviewData().surfaceColor, 0],
-      [this.trendPreviewData().surfaceEndColor, 1]] })
-    .border({ width: this.theme === 'glass' ? 1 : 0, color: this.trendPreviewData().edgeColor })
-    .shadow({ radius: this.theme === 'glass' ? 16 : 0, color: this.trendPreviewData().shadowColor })
-    .borderRadius(8)
+    TrendWidget({ data: this.trendPreviewData(), onCommand: (value: string) => this.previewTrendCommand(value) })
+      .width(this.trendDimension === 4 ? 290 : '100%').height(this.trendDimension === 4 ? 290 : 164)
   }
 
   build() {
@@ -666,38 +476,31 @@ struct CardSettings {
           TextInput({ text: this.title, placeholder: 'Sub2API' })
             .maxLength(24).width('100%').height(46)
             .onChange((value: string) => { this.title = value; })
-          Text('颜色风格').fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
-          Row({ space: 8 }) {
-            this.themeOption('pine', '云松')
-            this.themeOption('graphite', '石墨')
-          }
-          .width('100%')
-          Row({ space: 8 }) {
-            this.themeOption('mist', '海雾')
-            this.themeOption('coral', '珊瑚')
-          }
-          .width('100%')
-          Row() {
-            this.themeOption('glass', '琉璃')
-          }
-          .width('100%')
-          Text(this.theme === 'glass' ? `玻璃透亮度 ${this.transparency}%` :
-            `卡片背景透明度 ${this.transparency}%`)
+          Text('视觉结构').fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
+          ForEach(CARD_STYLES, (style: CardStyle) => {
+            this.themeOption(style)
+          }, (style: CardStyle) => style.id)
+          Text('这套结构的配色').fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
+          Row({ space: 7 }) {
+            ForEach([0, 1, 2], (index: number) => {
+              this.paletteOption(index)
+            }, (index: number) => `${index}`)
+          }.width('100%')
+          Text('每套结构提供三组配色，同步应用到额度卡和趋势卡。')
+            .fontSize(12).fontColor($r('app.color.quota_muted')).width('100%')
+          Text(`卡片背景透明度 ${this.transparency}%`)
             .fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
           Slider({ value: this.transparency, min: 0, max: 50, step: 5 })
-            .onChange((value: number) => { this.transparency = value; })
-            .width('100%')
+            .onChange((value: number) => { this.transparency = value; }).width('100%')
           Text('只调整卡片表面；文字和状态颜色保持不透明。')
             .fontSize(12).fontColor($r('app.color.quota_muted')).width('100%')
-          if (this.theme === 'glass') {
-            Text('琉璃深浅').fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
-            Row({ space: 8 }) {
-              this.option('跟随系统', 'appearance', 'system')
-              this.option('浅色', 'appearance', 'light')
-              this.option('深色', 'appearance', 'dark')
-            }
-            .width('100%')
-          }
+          Text('桌面预览').fontSize(15).fontColor($r('app.color.quota_ink')).width('100%')
+          Row({ space: 8 }) {
+            Button('浅色桌面').fontSize(12).layoutWeight(1).height(36)
+              .onClick(() => { this.previewDark = false; })
+            Button('深色桌面').fontSize(12).layoutWeight(1).height(36)
+              .onClick(() => { this.previewDark = true; })
+          }.width('100%')
           if (this.previewMode === 'trend') {
             Row({ space: 8 }) {
               this.option('2×4 中卡', 'dimension', '3')

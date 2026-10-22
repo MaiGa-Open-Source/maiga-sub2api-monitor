@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sub2API · 第二轮视觉探索</title>
+  <link rel="stylesheet" href="visual-style-exploration.css">
+  <script src="visual-style-exploration.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="sub2api-monitor-interaction.html"><span class="brand-mark">S2</span><span>Sub2API Monitor <small>桌面卡片设计探索</small></span></a>
+      <nav aria-label="交互稿导航"><a href="sub2api-monitor-interaction.html">额度交互存档</a><a href="account-usage-trend-interaction.html">趋势交互存档</a><span>D04 / 2026.10</span></nav>
+    </header>
+    <section class="intro">
+      <div><p class="eyebrow">ROUND 02 / STRUCTURE × COLOR</p><h1>5 套新结构 × 3 组配色。</h1><p>结构与配色分开选。当前产品采用 5 套结构、15 种搭配，覆盖全部 4 类卡片。</p></div>
+      <div class="intro-note"><span class="sample-dot"></span>同一组示例数据<br><small>比较颜色、字形、边框与信息层次</small></div>
+    </section>
+    <main class="workspace">
+      <aside class="controls" aria-label="视觉方案选择">
+        <div class="section-label"><h2>选择视觉方向</h2><span id="batch-count">05</span></div>
+        <div id="style-options" class="style-options" role="group" aria-label="视觉方向"></div>
+        <section class="control-section">
+          <h2>这套风格的配色</h2><div id="palette-options" class="palette-options" role="group" aria-label="配色方案"></div>
+        </section>
+        <section class="control-section">
+          <h2>放在桌面上看</h2>
+          <div class="segmented" role="group" aria-label="桌面背景"><button type="button" data-wallpaper="light" aria-pressed="true">浅色桌面</button><button type="button" data-wallpaper="dark" aria-pressed="false">深色桌面</button></div>
+          <label class="state-label" for="data-state">额度状态</label>
+          <select id="data-state"><option value="normal">运行正常 · 68%</option><option value="low">额度偏低 · 18%</option><option value="empty">额度用尽 · 0%</option><option value="unknown">额度未知 · --</option><option value="offline">连接失败 · 保留上次数据</option></select>
+        </section>
+        <button id="shortlist" class="shortlist" type="button" aria-pressed="false">加入候选</button>
+        <p id="shortlist-message" class="shortlist-message" role="status" aria-live="polite"></p>
+        <section class="reference"><h2>灵感摘录</h2><p id="reference-note"></p><div id="reference-links"></div></section>
+      </aside>
+      <section class="stage" aria-label="四种卡片完整预览">
+        <header class="stage-heading"><div><p id="style-index" class="eyebrow"></p><h2 id="style-title"></h2><p id="style-description"></p></div><span id="palette-label" class="palette-label"></span></header>
+        <div class="desktop" id="desktop" data-wallpaper="light">
+          <div class="desktop-heading"><span>09:41 <small>星期四</small></span><span>全部卡片 / 同步预览</span></div>
+          <div id="gallery" class="gallery"></div>
+          <div class="desktop-foot"><span>点击趋势卡切换 7 / 30 天、请求 / 费用、选中日期</span><span>比例示意 · 可适应窄屏</span></div>
+        </div>
+        <div class="direction-detail"><div><span>风格特征</span><p id="style-traits"></p></div><div><span>适合我们的场景</span><p id="style-fit"></p></div></div>
+      </section>
+    </main>
+    <footer class="footer"><p>离线视觉交互稿 · 账号、额度与趋势均为虚构示例。候选选择仅保存在当前浏览器；本版视觉已同步到应用代码并完成真机安装及启动，卡片视觉与交互尚待完整验收。</p><a href="visual-style-notes.md">查看参考摘录与适配说明 ↗</a></footer>
+  </div>
+</body>
+</html>

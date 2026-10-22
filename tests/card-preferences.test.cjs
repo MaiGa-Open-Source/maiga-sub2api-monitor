@@ -17,19 +17,20 @@ test('card preferences validate title, intervals, theme and opacity', () => {
   const value = card.normalizeCardPreferences({ title: 'A\nB', theme: 'invalid', appearance: 'invalid', transparency: 90,
     cardPeriodMinutes: 31, autoIntervalMinutes: 0, failureBackoffMinutes: 999 });
   assert.equal(value.title, 'AB');
-  assert.equal(value.theme, 'pine');
+  assert.equal(value.theme, 'aurora');
+  assert.equal(value.paletteIndex, 0);
   assert.equal(value.appearance, 'system');
   assert.equal(value.transparency, 50);
   assert.equal(value.cardPeriodMinutes, 60);
   assert.equal(value.autoIntervalMinutes, 1);
   assert.equal(value.failureBackoffMinutes, 15);
-  assert.equal(card.cardPalette('graphite', 50).surface, '#80252D32');
+  assert.equal(card.cardPalette('aurora', 50).surface, '#80E8E9F7');
 });
 
 test('single card ring distinguishes zero, unknown, and a known percentage', () => {
   const snapshot = createMockSnapshot('normal');
   snapshot.accounts[0].id = 1;
-  const options = { ...card.defaultCardPreferences(), title: '我的套餐', theme: 'mist' };
+  const options = { ...card.defaultCardPreferences(), title: '我的套餐', theme: 'aurora' };
   const known = new MockFormData(snapshot, [1], 2, options);
   assert.equal(known.cardTitle, '我的套餐');
   assert.equal(known.dimension, 'single');
@@ -46,30 +47,14 @@ test('single card ring distinguishes zero, unknown, and a known percentage', () 
   assert.equal(unknown.singleRingValue, 0);
 });
 
-test('glass appearance and brightness bind to both card sizes', () => {
-  const options = card.normalizeCardPreferences({ ...card.defaultCardPreferences(), theme: 'glass', transparency: 50 });
-  assert.equal(options.theme, 'glass');
-  assert.equal(card.cardPalette('glass', 0).surface, '#E1F0F1');
-  assert.equal(card.cardPalette('glass', 50).surface, '#F8FFFF');
-  assert.equal(card.cardPalette('glass', 0, true).surface, '#354D57');
-  assert.equal(card.cardPalette('glass', 50, true).surfaceEnd, '#344F59');
-
-  const snapshot = createMockSnapshot('normal');
-  snapshot.accounts[0].id = 1;
-  for (const dimension of [2, 3]) {
-    const light = new MockFormData(snapshot, [1], dimension, options, false);
-    const dark = new MockFormData(snapshot, [1], dimension, options, true);
-    assert.equal(light.glass, 'true');
-    assert.equal(light.surfaceColor, '#F8FFFF');
-    assert.equal(light.surfaceEndColor, '#DBF1F2');
-    assert.equal(dark.surfaceColor, '#63858B');
-    assert.equal(dark.surfaceEndColor, '#344F59');
-    assert.notEqual(light.inkColor, dark.inkColor);
-    assert.notEqual(light.edgeColor, dark.edgeColor);
-    assert.equal(new MockFormData(snapshot, [1], dimension,
-      { ...options, appearance: 'light' }, true).surfaceColor, light.surfaceColor);
-    assert.equal(new MockFormData(snapshot, [1], dimension,
-      { ...options, appearance: 'dark' }, false).surfaceColor, dark.surfaceColor);
+test('removed theme preferences migrate only appearance fields', () => {
+  for (const theme of ['pine', 'graphite', 'mist', 'coral', 'glass']) {
+    const input = { title: '旧账号卡', theme, appearance: 'dark', transparency: 25,
+      cardPeriodMinutes: 240, autoIntervalMinutes: 37, failureBackoffMinutes: 30 };
+    assert.deepEqual(card.normalizeCardPreferences(input), { ...input, theme: 'aurora', paletteIndex: 0 });
+  }
+  for (const paletteIndex of [-1, 3, 1.5, undefined, NaN]) {
+    assert.equal(card.normalizeCardPreferences({ ...card.defaultCardPreferences(), paletteIndex }).paletteIndex, 0);
   }
 });
 

@@ -1,10 +1,64 @@
+import { trendVisualPaths, TrendVisualPaths } from './CardVisuals';
 import { CardPreferences, cardPalette, defaultCardPreferences } from './CardPreferences';
 import { TrendChart, TrendSnapshot, trendChart } from './TrendStats';
 import { TrendFormView } from '../storage/TrendFormRegistry';
 
-export class TrendFormData {
+export interface TrendWidgetData {
+  dimension: string;
+  theme: string;
+  panelColor: string;
+  textureColor: string;
+  highlightColor: string;
+  chartStyleLine: string;
+  chartStyleArea: string;
+  chartStyleMarks: string;
+  chartStyleStems: string;
+  chartStyleHighlight: string;
+  surfaceColor: string;
+  surfaceEndColor: string;
+  edgeColor: string;
+  shadowColor: string;
+  inkColor: string;
+  mutedColor: string;
+  lineColor: string;
+  requestColor: string;
+  costColor: string;
+  chipColor: string;
+  accountName: string;
+  statusLabel: string;
+  days: number;
+  metric: string;
+  totalRequests: string;
+  totalCost: string;
+  axisTop: string;
+  axisMid: string;
+  chartBars: string;
+  chartHighlight: string;
+  chartLine: string;
+  chartArea: string;
+  dateLabels: string[];
+  dayCount: number;
+  barHeights: number[];
+  selectedDayIndex: number;
+  dayLabel: string;
+  dayValue: string;
+  chartCaption: string;
+  hasChart: string;
+  emptyLabel: string;
+  lastUpdated: string;
+}
+
+export class TrendFormData implements TrendWidgetData {
   dimension: string = 'medium';
-  glass: string = 'false';
+  theme: string = 'aurora';
+  panelColor: string = '';
+  textureColor: string = '';
+  highlightColor: string = '';
+  chartStyleLine: string = '';
+  chartStyleArea: string = '';
+  chartStyleMarks: string = '';
+  chartStyleStems: string = '';
+  chartStyleHighlight: string = '';
   surfaceColor: string = '#FFF9FBFA';
   surfaceEndColor: string = '#FFF9FBFA';
   edgeColor: string = '#00000000';
@@ -43,11 +97,11 @@ export class TrendFormData {
     this.dimension = form.dimension === 4 ? 'large' : 'medium';
     this.days = form.days;
     this.metric = form.metric;
-    this.glass = settings.theme === 'glass' ? 'true' : 'false';
-    const glassDark = settings.appearance === 'dark' ||
-      (settings.appearance === 'system' && darkMode);
-    const palette = cardPalette(settings.theme, settings.transparency,
-      settings.theme === 'glass' ? glassDark : darkMode);
+    this.theme = settings.theme;
+    const palette = cardPalette(settings.theme, settings.transparency, darkMode, settings.paletteIndex);
+    this.panelColor = palette.panel;
+    this.textureColor = palette.texture;
+    this.highlightColor = palette.highlight;
     this.surfaceColor = palette.surface;
     this.surfaceEndColor = palette.surfaceEnd;
     this.edgeColor = palette.edge;
@@ -56,10 +110,8 @@ export class TrendFormData {
     this.mutedColor = palette.muted;
     this.lineColor = palette.line;
     this.requestColor = palette.healthy;
-    this.costColor = settings.theme === 'graphite' || settings.theme === 'glass' && glassDark ?
-      '#FFC18B' : settings.theme === 'coral' ? '#AE5561' : '#C3654F';
-    this.chipColor = settings.theme === 'graphite' || settings.theme === 'glass' && glassDark ?
-      '#354A4C' : '#EAF2EE';
+    this.costColor = palette.secondary;
+    this.chipColor = palette.chip;
     this.accountName = snapshot.accountName || (snapshot.accountId ? `账号 #${snapshot.accountId}` : '选择关注账号');
     this.lastUpdated = snapshot.savedAt ? `${new Date(snapshot.savedAt).getHours().toString().padStart(2, '0')}:` +
       `${new Date(snapshot.savedAt).getMinutes().toString().padStart(2, '0')}` : '未更新';
@@ -71,6 +123,12 @@ export class TrendFormData {
           snapshot.notice;
     const chart: TrendChart = trendChart(snapshot.history, form.days, form.metric,
       form.selectedIndex, snapshot.savedAt);
+    const visual: TrendVisualPaths = trendVisualPaths(chart, settings.theme, form.days);
+    this.chartStyleLine = visual.line;
+    this.chartStyleArea = visual.area;
+    this.chartStyleMarks = visual.marks;
+    this.chartStyleStems = visual.stems;
+    this.chartStyleHighlight = visual.highlight;
     this.totalRequests = chart.requests;
     this.totalCost = chart.cost;
     this.axisTop = chart.axisTop;

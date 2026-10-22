@@ -135,10 +135,58 @@ export function createMockSnapshot(scenarioId: string): QuotaSnapshot {
   return snapshot;
 }
 
-export class MockFormData {
+export interface QuotaWidgetData {
+  dimension: string;
+  cardTitle: string;
+  theme: string;
+  chipColor: string;
+  panelColor: string;
+  textureColor: string;
+  highlightColor: string;
+  surfaceColor: string;
+  surfaceEndColor: string;
+  edgeColor: string;
+  shadowColor: string;
+  inkColor: string;
+  mutedColor: string;
+  lineColor: string;
+  healthyColor: string;
+  warningColor: string;
+  errorColor: string;
+  statusLabel: string;
+  statusTone: string;
+  notice: string;
+  abnormalLabel: string;
+  timeLabel: string;
+  singleTimeLabel: string;
+  hasAccounts: string;
+  firstName: string;
+  firstMeta: string;
+  firstRemaining: string;
+  firstState: string;
+  firstTone: string;
+  secondName: string;
+  secondMeta: string;
+  secondRemaining: string;
+  secondState: string;
+  secondTone: string;
+  singleName: string;
+  singleMeta: string;
+  singleRemaining: string;
+  singleState: string;
+  singleTone: string;
+  singleRingValue: number;
+  singleRingKnown: string;
+}
+
+export class MockFormData implements QuotaWidgetData {
   dimension: string = 'dual';
   cardTitle: string = 'Sub2API';
-  glass: string = 'false';
+  theme: string = 'aurora';
+  chipColor: string = '';
+  panelColor: string = '';
+  textureColor: string = '';
+  highlightColor: string = '';
   surfaceColor: string = '';
   surfaceEndColor: string = '';
   edgeColor: string = '';
@@ -178,11 +226,12 @@ export class MockFormData {
     preferences: CardPreferences = defaultCardPreferences(), darkMode: boolean = false) {
     this.dimension = dimension === 2 ? 'single' : 'dual';
     this.cardTitle = preferences.title;
-    this.glass = preferences.theme === 'glass' ? 'true' : 'false';
-    const glassDark = preferences.appearance === 'dark' ||
-      (preferences.appearance === 'system' && darkMode);
-    const palette = cardPalette(preferences.theme, preferences.transparency,
-      preferences.theme === 'glass' ? glassDark : darkMode);
+    this.theme = preferences.theme;
+    const palette = cardPalette(preferences.theme, preferences.transparency, darkMode, preferences.paletteIndex);
+    this.chipColor = palette.chip;
+    this.panelColor = palette.panel;
+    this.textureColor = palette.texture;
+    this.highlightColor = palette.highlight;
     this.surfaceColor = palette.surface;
     this.surfaceEndColor = palette.surfaceEnd;
     this.edgeColor = palette.edge;
